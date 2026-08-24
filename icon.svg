@@ -1,0 +1,7 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="96" fill="#1A1A2E"/>
+  <circle cx="256" cy="220" r="120" fill="#FF6B35" opacity="0.15"/>
+  <circle cx="256" cy="220" r="80" fill="#FF6B35"/>
+  <text x="256" y="250" font-size="72" text-anchor="middle" fill="#fff">🎤</text>
+  <text x="256" y="400" font-size="64" text-anchor="middle" fill="#FF6B35" font-weight="bold">🧭</text>
+</svg>
