@@ -11,426 +11,108 @@
   <title>🧭 Lola Voice</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
     :root {
-      --bg: #0a1628;
-      --card: #142844;
-      --accent: #ff6b35;
-      --accent-glow: rgba(255, 107, 53, 0.3);
-      --green: #4caf50;
-      --red: #f44336;
-      --blue: #2196f3;
-      --text: #e8e8e8;
-      --text-dim: #8a8a8a;
-      --border: #1e3a5f;
+      --bg: #0a1628; --card: #142844; --accent: #ff6b35;
+      --accent-glow: rgba(255,107,53,0.3); --green: #4caf50;
+      --red: #f44336; --blue: #2196f3; --text: #e8e8e8;
+      --text-dim: #8a8a8a; --border: #1e3a5f;
     }
-    
     body {
-      background: var(--bg);
-      color: var(--text);
+      background: var(--bg); color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      min-height: 100vh; display: flex; flex-direction: column; overflow: hidden;
     }
-    
-    /* === Header === */
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: var(--card);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
     }
-    
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 18px;
-      font-weight: 600;
-    }
-    
+    .header-title { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; }
     .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase;
     }
-    
-    .status-off {
-      background: rgba(244, 67, 54, 0.2);
-      color: var(--red);
-      border: 1px solid var(--red);
-    }
-    
-    .status-on {
-      background: rgba(76, 175, 80, 0.2);
-      color: var(--green);
-      border: 1px solid var(--green);
-      animation: pulse-green 2s infinite;
-    }
-    
-    .status-listening {
-      background: rgba(255, 107, 53, 0.2);
-      color: var(--accent);
-      border: 1px solid var(--accent);
-      animation: pulse-orange 1s infinite;
-    }
-    
-    .status-thinking {
-      background: rgba(33, 150, 243, 0.2);
-      color: var(--blue);
-      border: 1px solid var(--blue);
-    }
-    
-    .status-speaking {
-      background: rgba(33, 150, 243, 0.2);
-      color: var(--blue);
-      border: 1px solid var(--blue);
-      animation: pulse-blue 1s infinite;
-    }
-    
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-    
-    @keyframes pulse-green {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
-      50% { box-shadow: 0 0 0 8px rgba(76, 175, 80, 0); }
-    }
-    
-    @keyframes pulse-orange {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4); }
-      50% { box-shadow: 0 0 0 12px rgba(255, 107, 53, 0); }
-    }
-    
-    @keyframes pulse-blue {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4); }
-      50% { box-shadow: 0 0 0 8px rgba(33, 150, 243, 0); }
-    }
-    
-    /* === Main Area === */
+    .status-off { background: rgba(244,67,54,0.2); color: var(--red); border: 1px solid var(--red); }
+    .status-on { background: rgba(76,175,80,0.2); color: var(--green); border: 1px solid var(--green); animation: pulse-green 2s infinite; }
+    .status-listening { background: rgba(255,107,53,0.2); color: var(--accent); border: 1px solid var(--accent); animation: pulse-orange 1s infinite; }
+    .status-thinking { background: rgba(33,150,243,0.2); color: var(--blue); border: 1px solid var(--blue); }
+    .status-speaking { background: rgba(33,150,243,0.2); color: var(--blue); border: 1px solid var(--blue); animation: pulse-blue 1s infinite; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    @keyframes pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(76,175,80,0.4); } 50% { box-shadow: 0 0 0 8px rgba(76,175,80,0); } }
+    @keyframes pulse-orange { 0%,100% { box-shadow: 0 0 0 0 rgba(255,107,53,0.4); } 50% { box-shadow: 0 0 0 12px rgba(255,107,53,0); } }
+    @keyframes pulse-blue { 0%,100% { box-shadow: 0 0 0 0 rgba(33,150,243,0.4); } 50% { box-shadow: 0 0 0 8px rgba(33,150,243,0); } }
     .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      gap: 24px;
-      overflow: hidden;
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 20px; gap: 24px; overflow: hidden;
     }
-    
-    /* === Voice Orb === */
     .voice-orb {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: var(--card);
-      border: 3px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 64px;
-      transition: all 0.3s ease;
-      position: relative;
+      width: 200px; height: 200px; border-radius: 50%; background: var(--card);
+      border: 3px solid var(--border); display: flex; align-items: center;
+      justify-content: center; font-size: 64px; transition: all 0.3s ease; position: relative;
     }
-    
-    .voice-orb.idle {
-      border-color: var(--text-dim);
-    }
-    
-    .voice-orb.listening {
-      border-color: var(--accent);
-      background: rgba(255, 107, 53, 0.1);
-      box-shadow: 0 0 40px var(--accent-glow);
-      animation: orb-pulse 1.5s infinite;
-    }
-    
-    .voice-orb.thinking {
-      border-color: var(--blue);
-      background: rgba(33, 150, 243, 0.1);
-      box-shadow: 0 0 30px rgba(33, 150, 243, 0.3);
-    }
-    
-    .voice-orb.speaking {
-      border-color: var(--blue);
-      background: rgba(33, 150, 243, 0.1);
-      box-shadow: 0 0 30px rgba(33, 150, 243, 0.3);
-      animation: orb-pulse 1s infinite;
-    }
-    
-    .voice-orb.on {
-      border-color: var(--green);
-      background: rgba(76, 175, 80, 0.1);
-    }
-    
-    @keyframes orb-pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-    
-    .voice-status-text {
-      font-size: 16px;
-      color: var(--text-dim);
-      text-align: center;
-      min-height: 24px;
-    }
-    
+    .voice-orb.idle { border-color: var(--text-dim); }
+    .voice-orb.listening { border-color: var(--accent); background: rgba(255,107,53,0.1); box-shadow: 0 0 40px var(--accent-glow); animation: orb-pulse 1.5s infinite; }
+    .voice-orb.thinking { border-color: var(--blue); background: rgba(33,150,243,0.1); box-shadow: 0 0 30px rgba(33,150,243,0.3); }
+    .voice-orb.speaking { border-color: var(--blue); background: rgba(33,150,243,0.1); box-shadow: 0 0 30px rgba(33,150,243,0.3); animation: orb-pulse 1s infinite; }
+    .voice-orb.on { border-color: var(--green); background: rgba(76,175,80,0.1); }
+    @keyframes orb-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .voice-status-text { font-size: 16px; color: var(--text-dim); text-align: center; min-height: 24px; }
     .voice-transcript {
-      max-width: 90%;
-      padding: 12px 16px;
-      background: var(--card);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      font-size: 15px;
-      line-height: 1.5;
-      display: none;
-      max-height: 120px;
-      overflow-y: auto;
+      max-width: 90%; padding: 12px 16px; background: var(--card);
+      border-radius: 16px; border: 1px solid var(--border); font-size: 15px;
+      line-height: 1.5; display: none; max-height: 120px; overflow-y: auto;
     }
-    
-    .voice-transcript.visible {
-      display: block;
-    }
-    
+    .voice-transcript.visible { display: block; }
     .voice-response {
-      max-width: 90%;
-      padding: 12px 16px;
-      background: rgba(33, 150, 243, 0.1);
-      border-radius: 16px;
-      border: 1px solid var(--blue);
-      font-size: 15px;
-      line-height: 1.5;
-      display: none;
-      max-height: 150px;
-      overflow-y: auto;
+      max-width: 90%; padding: 12px 16px; background: rgba(33,150,243,0.1);
+      border-radius: 16px; border: 1px solid var(--blue); font-size: 15px;
+      line-height: 1.5; display: none; max-height: 150px; overflow-y: auto;
     }
-    
-    .voice-response.visible {
-      display: block;
-    }
-    
-    .response-label {
-      font-size: 11px;
-      color: var(--blue);
-      margin-bottom: 4px;
-      font-weight: 600;
-    }
-    
-    /* === ON/OFF Button === */
+    .voice-response.visible { display: block; }
+    .response-label { font-size: 11px; color: var(--blue); margin-bottom: 4px; font-weight: 600; }
     .power-button {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      border: 3px solid var(--red);
-      background: rgba(244, 67, 54, 0.1);
-      color: var(--red);
-      font-size: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      flex-shrink: 0;
+      width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--red);
+      background: rgba(244,67,54,0.1); color: var(--red); font-size: 32px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: all 0.3s ease; flex-shrink: 0;
     }
-    
-    .power-button.on {
-      border-color: var(--green);
-      background: rgba(76, 175, 80, 0.2);
-      color: var(--green);
-      box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
-    }
-    
-    .power-button:active {
-      transform: scale(0.95);
-    }
-    
-    .power-label {
-      font-size: 12px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    
-    /* === Chat Log === */
+    .power-button.on { border-color: var(--green); background: rgba(76,175,80,0.2); color: var(--green); box-shadow: 0 0 20px rgba(76,175,80,0.3); }
+    .power-button:active { transform: scale(0.95); }
+    .power-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
     .chat-log {
-      width: 100%;
-      max-height: 200px;
-      overflow-y: auto;
-      padding: 0 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      flex-shrink: 0;
+      width: 100%; max-height: 200px; overflow-y: auto; padding: 0 16px;
+      display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
     }
-    
-    .chat-bubble {
-      max-width: 85%;
-      padding: 10px 14px;
-      border-radius: 16px;
-      font-size: 14px;
-      line-height: 1.4;
-      animation: slide-in 0.3s ease;
-    }
-    
-    @keyframes slide-in {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .chat-bubble.user {
-      align-self: flex-end;
-      background: var(--accent);
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-    
-    .chat-bubble.lola {
-      align-self: flex-start;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-    }
-    
-    .chat-bubble .timestamp {
-      font-size: 10px;
-      opacity: 0.6;
-      margin-top: 4px;
-    }
-    
-    /* === Settings Panel === */
+    .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; animation: slide-in 0.3s ease; }
+    @keyframes slide-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .chat-bubble.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+    .chat-bubble.lola { align-self: flex-start; background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+    .chat-bubble .timestamp { font-size: 10px; opacity: 0.6; margin-top: 4px; }
     .settings-panel {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 100;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; padding: 20px;
     }
-    
-    .settings-panel.visible {
-      display: flex;
-    }
-    
-    .settings-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      width: 100%;
-      max-width: 400px;
-    }
-    
-    .settings-card h2 {
-      font-size: 20px;
-      margin-bottom: 16px;
-    }
-    
-    .settings-field {
-      margin-bottom: 16px;
-    }
-    
-    .settings-field label {
-      display: block;
-      font-size: 13px;
-      color: var(--text-dim);
-      margin-bottom: 6px;
-    }
-    
-    .settings-field input {
-      width: 100%;
-      padding: 10px 12px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 15px;
-    }
-    
-    .settings-field input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-    
-    .settings-buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
-    
-    .btn {
-      flex: 1;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    
-    .btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-    
-    .btn-secondary {
-      background: var(--border);
-      color: var(--text);
-    }
-    
-    .settings-icon {
-      cursor: pointer;
-      font-size: 20px;
-      opacity: 0.7;
-    }
-    
-    /* === Footer === */
-    .footer {
-      padding: 8px 16px;
-      text-align: center;
-      font-size: 11px;
-      color: var(--text-dim);
-      flex-shrink: 0;
-    }
-    
-    /* === Wake word indicator === */
-    .wake-hint {
-      font-size: 13px;
-      color: var(--text-dim);
-      text-align: center;
-      padding: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      max-width: 90%;
-    }
-    
-    .wake-hint.active {
-      color: var(--green);
-      background: rgba(76, 175, 80, 0.1);
-    }
-    
-    /* Scrollbar */
+    .settings-panel.visible { display: flex; }
+    .settings-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 400px; }
+    .settings-card h2 { font-size: 20px; margin-bottom: 16px; }
+    .settings-field { margin-bottom: 16px; }
+    .settings-field label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 6px; }
+    .settings-field input { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 15px; }
+    .settings-field input:focus { outline: none; border-color: var(--accent); }
+    .settings-buttons { display: flex; gap: 12px; margin-top: 20px; }
+    .btn { flex: 1; padding: 10px 16px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-secondary { background: var(--border); color: var(--text); }
+    .settings-icon { cursor: pointer; font-size: 20px; opacity: 0.7; }
+    .footer { padding: 8px 16px; text-align: center; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+    .wake-hint { font-size: 13px; color: var(--text-dim); text-align: center; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; max-width: 90%; }
+    .wake-hint.active { color: var(--green); background: rgba(76,175,80,0.1); }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   </style>
 </head>
 <body>
-  <!-- Header -->
   <div class="header">
     <div class="header-title">🧭 Lola Voice</div>
     <div class="status-badge status-off" id="status-badge">
@@ -440,51 +122,35 @@
     <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
   </div>
 
-  <!-- Main -->
   <div class="main">
-    <!-- Voice Orb -->
-    <div class="voice-orb idle" id="voice-orb">
-      🧭
-    </div>
-    
+    <div class="voice-orb idle" id="voice-orb">🧭</div>
     <div class="voice-status-text" id="voice-status">Apasă ON pentru a conecta</div>
-    
-    <!-- Wake word hint -->
     <div class="wake-hint" id="wake-hint" style="display:none">
       Spune <strong>"Hey Lola"</strong> pentru a începe
     </div>
-    
-    <!-- Transcript -->
     <div class="voice-transcript" id="transcript"></div>
-    
-    <!-- Response -->
     <div class="voice-response" id="response">
       <div class="response-label">🧭 LOLA:</div>
       <div id="response-text"></div>
     </div>
   </div>
 
-  <!-- Chat Log -->
   <div class="chat-log" id="chat-log"></div>
 
-  <!-- Footer with Power Button -->
   <div class="footer">
     <div style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:8px">
-      <div class="power-button" id="power-button" onclick="togglePower()">
-        ⏻
-      </div>
+      <div class="power-button" id="power-button" onclick="togglePower()">⏻</div>
       <div class="power-label" id="power-label">OFF</div>
     </div>
-    <div>🧭 Lola Voice v2.0</div>
+    <div>🧭 Lola Voice v3.0</div>
   </div>
 
-  <!-- Settings -->
   <div class="settings-panel" id="settings-panel">
     <div class="settings-card">
       <h2>⚙️ Setări</h2>
       <div class="settings-field">
-        <label for="gateway-url">Gateway URL (Tailscale IP)</label>
-        <input type="url" id="gateway-url" placeholder="https://100.x.x.x:18789">
+        <label for="gateway-url">Gateway URL (HTTPS Tailscale)</label>
+        <input type="url" id="gateway-url" placeholder="https://desktop-iohktkv.tail18ed74.ts.net">
       </div>
       <div class="settings-field">
         <label for="gateway-token">Gateway Token</label>
@@ -515,69 +181,50 @@
     const TOKEN_KEY = 'lola_gateway_token';
     const WAKE_KEY = 'lola_wake_word';
     const TTS_KEY = 'lola_tts_voice';
-    
+
     let gatewayUrl = localStorage.getItem(GATEWAY_KEY) || '';
     let gatewayToken = localStorage.getItem(TOKEN_KEY) || '';
     let wakeWord = localStorage.getItem(WAKE_KEY) || 'hey lola';
     let ttsVoice = localStorage.getItem(TTS_KEY) || 'auto';
-    
-    // Load settings into UI
+
     document.getElementById('gateway-url').value = gatewayUrl;
     document.getElementById('gateway-token').value = gatewayToken;
     document.getElementById('wake-word').value = wakeWord;
     document.getElementById('tts-voice').value = ttsVoice;
-    
+
     // === State ===
-    let isOn = false;
-    let isConnected = false;
-    let isListening = false;
-    let isThinking = false;
-    let isSpeaking = false;
-    let recognition = null;
-    let wakeRecognition = null;
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let pollTimer = null;
-    let lastPollTime = 0;
-    
-    // === UI Functions ===
+    let isOn = false, isConnected = false, isListening = false, isThinking = false, isSpeaking = false;
+    let recognition = null, wakeRecognition = null;
+    let ws = null, wsReconnectTimer = null, messageQueue = [];
+    let pendingResponseResolve = null;
+
+    // === UI ===
     function setStatus(status, text) {
       const badge = document.getElementById('status-badge');
       const statusText = document.getElementById('status-text');
       const orb = document.getElementById('voice-orb');
       const voiceStatus = document.getElementById('voice-status');
-      
       badge.className = 'status-badge status-' + status;
       statusText.textContent = text;
-      
       orb.className = 'voice-orb ' + (status === 'off' ? 'idle' : status);
       voiceStatus.textContent = text === 'DECONECTAT' ? 'Apasă ON pentru a conecta' : text;
     }
-    
-    function toggleSettings() {
-      document.getElementById('settings-panel').classList.toggle('visible');
-    }
-    
+
+    function toggleSettings() { document.getElementById('settings-panel').classList.toggle('visible'); }
+
     function saveSettings() {
       gatewayUrl = document.getElementById('gateway-url').value.trim().replace(/\/$/, '');
       gatewayToken = document.getElementById('gateway-token').value.trim();
       wakeWord = document.getElementById('wake-word').value.trim().toLowerCase();
       ttsVoice = document.getElementById('tts-voice').value;
-      
       localStorage.setItem(GATEWAY_KEY, gatewayUrl);
       localStorage.setItem(TOKEN_KEY, gatewayToken);
       localStorage.setItem(WAKE_KEY, wakeWord);
       localStorage.setItem(TTS_KEY, ttsVoice);
-      
       toggleSettings();
-      
-      if (isOn) {
-        // Reconnect with new settings
-        powerOff();
-        setTimeout(() => powerOn(), 500);
-      }
+      if (isOn) { powerOff(); setTimeout(() => powerOn(), 500); }
     }
-    
+
     function addChatBubble(text, sender) {
       const log = document.getElementById('chat-log');
       const bubble = document.createElement('div');
@@ -586,463 +233,316 @@
       bubble.innerHTML = text + '<div class="timestamp">' + time + '</div>';
       log.appendChild(bubble);
       log.scrollTop = log.scrollHeight;
-      
-      // Keep max 20 bubbles
-      while (log.children.length > 20) {
-        log.removeChild(log.firstChild);
-      }
+      while (log.children.length > 20) log.removeChild(log.firstChild);
     }
-    
-    // === Power ON/OFF ===
-    async function togglePower() {
-      if (isOn) {
-        powerOff();
-      } else {
-        await powerOn();
-      }
-    }
-    
+
+    // === Power ===
+    async function togglePower() { if (isOn) powerOff(); else await powerOn(); }
+
     async function powerOn() {
-      if (!gatewayUrl) {
-        toggleSettings();
-        return;
-      }
-      
+      if (!gatewayUrl) { toggleSettings(); return; }
       isOn = true;
       document.getElementById('power-button').classList.add('on');
       document.getElementById('power-label').textContent = 'ON';
       document.getElementById('wake-hint').style.display = 'block';
-      
-      // Test connection
       setStatus('on', 'CONECTARE...');
-      const ok = await testConnection();
-      
-      if (ok) {
-        isConnected = true;
-        setStatus('on', 'CONECTAT');
-        document.getElementById('wake-hint').classList.add('active');
-        startWakeWordDetection();
-        startPolling();
-      } else {
-        setStatus('off', 'DECONECTAT');
-        document.getElementById('voice-status').textContent = 'Nu pot conecta la Gateway. Verifică URL și Tailscale.';
-        isOn = false;
-        document.getElementById('power-button').classList.remove('on');
-        document.getElementById('power-label').textContent = 'OFF';
-        document.getElementById('wake-hint').style.display = 'none';
-      }
+      connectWebSocket();
     }
-    
+
     function powerOff() {
-      isOn = false;
-      isConnected = false;
-      isListening = false;
-      isThinking = false;
-      isSpeaking = false;
-      
+      isOn = false; isConnected = false; isListening = false; isThinking = false; isSpeaking = false;
       document.getElementById('power-button').classList.remove('on');
       document.getElementById('power-label').textContent = 'OFF';
       document.getElementById('wake-hint').style.display = 'none';
       document.getElementById('wake-hint').classList.remove('active');
-      
       stopWakeWordDetection();
-      stopPolling();
-      stopListening();
+      disconnectWebSocket();
       stopSpeaking();
-      
       setStatus('off', 'DECONECTAT');
-      
-      // Hide transcript/response
       document.getElementById('transcript').classList.remove('visible');
       document.getElementById('response').classList.remove('visible');
     }
-    
-    // === Connection Test ===
-    async function testConnection() {
+
+    // === WebSocket ===
+    function connectWebSocket() {
+      disconnectWebSocket();
+      // Convert HTTPS to WSS
+      const wsUrl = gatewayUrl.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
+      console.log('Connecting to:', wsUrl);
+
       try {
-        const res = await fetch(`${gatewayUrl}/api/health`, {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${gatewayToken}` },
-          signal: AbortSignal.timeout(5000)
-        });
-        return res.ok;
+        ws = new WebSocket(wsUrl, ['openclaw.token.' + gatewayToken]);
       } catch (e) {
-        // Try without auth
-        try {
-          const res2 = await fetch(`${gatewayUrl}/`, {
-            method: 'GET',
-            signal: AbortSignal.timeout(5000)
-          });
-          return res2.ok;
-        } catch (e2) {
-          return false;
+        // Fallback: try query param
+        try { ws = new WebSocket(wsUrl + '?token=' + encodeURIComponent(gatewayToken)); }
+        catch (e2) { setStatus('off', 'DECONECTAT'); isOn = false; return; }
+      }
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        isConnected = true;
+        setStatus('on', 'CONECTAT');
+        document.getElementById('wake-hint').classList.add('active');
+        startWakeWordDetection();
+        // Flush queued messages
+        while (messageQueue.length > 0) {
+          const msg = messageQueue.shift();
+          ws.send(JSON.stringify(msg));
         }
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          handleWsMessage(data);
+        } catch (e) {
+          console.log('WS parse error:', e);
+        }
+      };
+
+      ws.onerror = (e) => {
+        console.log('WS error:', e);
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket closed');
+        isConnected = false;
+        if (isOn) {
+          setStatus('on', 'RECONECTARE...');
+          wsReconnectTimer = setTimeout(() => connectWebSocket(), 3000);
+        } else {
+          setStatus('off', 'DECONECTAT');
+        }
+      };
+    }
+
+    function disconnectWebSocket() {
+      if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
+      if (ws) {
+        ws.onclose = null; ws.onerror = null; ws.onmessage = null; ws.onopen = null;
+        try { ws.close(); } catch (e) {}
+        ws = null;
       }
     }
-    
-    // === Wake Word Detection ===
-    function startWakeWordDetection() {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) {
-        console.log('SpeechRecognition not available');
+
+    function sendWsMessage(msg) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(msg));
+      } else {
+        messageQueue.push(msg);
+      }
+    }
+
+    function handleWsMessage(data) {
+      // OpenClaw WebSocket protocol: handle different event types
+      const eventType = data.type || data.event || '';
+      const payload = data.payload || data.data || data;
+
+      // Assistant text response
+      if (eventType === 'assistant' || eventType === 'assistant.delta' || eventType === 'chat.message' || data.role === 'assistant') {
+        let text = '';
+        if (typeof payload === 'string') text = payload;
+        else if (payload.text) text = payload.text;
+        else if (payload.content) text = payload.content;
+        else if (payload.message) text = payload.message;
+        else if (data.text) text = data.text;
+
+        if (text && text.trim()) {
+          // Check if this is a final message (not streaming delta)
+          const isFinal = eventType === 'assistant' || eventType === 'chat.message' || data.final === true;
+
+          if (isFinal) {
+            addChatBubble(text, 'lola');
+            document.getElementById('response-text').textContent = text;
+            document.getElementById('response').classList.add('visible');
+            isThinking = false;
+            speakResponse(text);
+          } else {
+            // Streaming delta - update response text live
+            document.getElementById('response-text').textContent = text;
+            document.getElementById('response').classList.add('visible');
+          }
+        }
         return;
       }
-      
+
+      // Thinking/status events
+      if (eventType === 'thinking' || eventType === 'tool_call' || eventType === 'tool') {
+        // Keep thinking state
+        return;
+      }
+
+      // Hello/connected event
+      if (eventType === 'hello' || eventType === 'connected') {
+        console.log('Gateway hello:', payload);
+        return;
+      }
+
+      // Session events
+      if (eventType === 'session' || eventType === 'session.message') {
+        console.log('Session event:', payload);
+        return;
+      }
+
+      // Generic message with text
+      if (data.text || data.message || data.response) {
+        const text = data.text || data.message || data.response;
+        if (text && text.trim()) {
+          addChatBubble(text, 'lola');
+          document.getElementById('response-text').textContent = text;
+          document.getElementById('response').classList.add('visible');
+          isThinking = false;
+          speakResponse(text);
+        }
+        return;
+      }
+
+      console.log('Unhandled WS message:', data);
+    }
+
+    function sendTextToGateway(text) {
+      isThinking = true;
+      stopListening();
+      setStatus('thinking', 'PROCESEZ...');
+
+      // OpenClaw WebSocket message format for chat
+      sendWsMessage({
+        type: 'chat',
+        text: text,
+        session: 'pwa-voice'
+      });
+    }
+
+    // === Wake Word ===
+    function startWakeWordDetection() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { console.log('SpeechRecognition not available'); return; }
       wakeRecognition = new SR();
       wakeRecognition.continuous = true;
       wakeRecognition.interimResults = true;
       wakeRecognition.lang = 'ro-RO';
-      
       wakeRecognition.onresult = (event) => {
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript.toLowerCase().trim();
           if (transcript.includes(wakeWord) && !isListening && !isThinking && !isSpeaking) {
-            console.log('Wake word detected:', transcript);
             wakeRecognition.stop();
             startListening();
             return;
           }
         }
       };
-      
       wakeRecognition.onerror = (e) => {
-        console.log('Wake word error:', e.error);
         if (e.error === 'no-speech' || e.error === 'aborted') return;
-        // Restart after delay
         if (isOn && !isListening) {
-          setTimeout(() => {
-            if (isOn && !isListening && !isThinking && !isSpeaking) {
-              try { wakeRecognition.start(); } catch(e) {}
-            }
-          }, 1000);
+          setTimeout(() => { if (isOn && !isListening && !isThinking && !isSpeaking) { try { wakeRecognition.start(); } catch(e) {} } }, 1000);
         }
       };
-      
       wakeRecognition.onend = () => {
-        // Restart if still on and not actively listening
         if (isOn && !isListening && !isThinking && !isSpeaking) {
-          setTimeout(() => {
-            try { wakeRecognition.start(); } catch(e) {}
-          }, 100);
+          setTimeout(() => { try { wakeRecognition.start(); } catch(e) {} }, 100);
         }
       };
-      
-      try {
-        wakeRecognition.start();
-        console.log('Wake word detection started:', wakeWord);
-      } catch(e) {
-        console.log('Wake word start error:', e);
-      }
+      try { wakeRecognition.start(); } catch(e) {}
     }
-    
+
     function stopWakeWordDetection() {
-      if (wakeRecognition) {
-        try { wakeRecognition.stop(); } catch(e) {}
-        wakeRecognition = null;
-      }
+      if (wakeRecognition) { try { wakeRecognition.stop(); } catch(e) {} wakeRecognition = null; }
     }
-    
-    // === Listening (after wake word) ===
+
+    // === Listening ===
     function startListening() {
       isListening = true;
       setStatus('listening', 'ASCULT...');
-      
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) {
-        // Fallback: use MediaRecorder
-        startMediaRecording();
-        return;
-      }
-      
+      if (!SR) { startMediaRecording(); return; }
       recognition = new SR();
-      recognition.lang = 'ro-RO';
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      
+      recognition.lang = 'ro-RO'; recognition.continuous = false; recognition.interimResults = true;
       let finalTranscript = '';
-      
       recognition.onresult = (event) => {
         let interim = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const t = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += t;
-          } else {
-            interim += t;
-          }
+          if (event.results[i].isFinal) finalTranscript += t; else interim += t;
         }
-        
-        // Show interim
         const transcriptEl = document.getElementById('transcript');
         transcriptEl.textContent = finalTranscript + interim;
         transcriptEl.classList.add('visible');
       };
-      
-      recognition.onerror = (e) => {
-        console.log('Recognition error:', e.error);
-        stopListening();
-        if (isOn) startWakeWordDetection();
-      };
-      
+      recognition.onerror = (e) => { stopListening(); if (isOn) startWakeWordDetection(); };
       recognition.onend = () => {
         if (finalTranscript.trim()) {
           addChatBubble(finalTranscript.trim(), 'user');
-          sendToGateway(finalTranscript.trim());
-        } else {
-          stopListening();
-          if (isOn) startWakeWordDetection();
-        }
+          sendTextToGateway(finalTranscript.trim());
+        } else { stopListening(); if (isOn) startWakeWordDetection(); }
       };
-      
-      try {
-        recognition.start();
-      } catch(e) {
-        console.log('Recognition start error:', e);
-        stopListening();
-        if (isOn) startWakeWordDetection();
-      }
+      try { recognition.start(); } catch(e) { stopListening(); if (isOn) startWakeWordDetection(); }
     }
-    
+
     function stopListening() {
       isListening = false;
-      if (recognition) {
-        try { recognition.stop(); } catch(e) {}
-        recognition = null;
-      }
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        try { mediaRecorder.stop(); } catch(e) {}
-      }
+      if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
     }
-    
-    // === Fallback: Media Recording ===
+
+    // === Media Recording Fallback ===
     async function startMediaRecording() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioChunks = [];
-        mediaRecorder = new MediaRecorder(stream);
-        
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) audioChunks.push(e.data);
-        };
-        
+        const mediaRecorder = new MediaRecorder(stream);
+        let audioChunks = [];
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
         mediaRecorder.onstop = async () => {
           const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
           stream.getTracks().forEach(t => t.stop());
-          
           if (audioBlob.size > 1000) {
-            await sendAudioToGateway(audioBlob);
-          } else {
-            stopListening();
-            if (isOn) startWakeWordDetection();
-          }
+            // Send as base64 audio through WebSocket
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64 = reader.result.split(',')[1];
+              sendWsMessage({ type: 'audio', audio: base64, format: 'webm', session: 'pwa-voice' });
+              isThinking = true;
+              setStatus('thinking', 'PROCESEZ...');
+            };
+            reader.readAsDataURL(audioBlob);
+          } else { stopListening(); if (isOn) startWakeWordDetection(); }
         };
-        
-        // Auto-stop after 30 seconds
-        setTimeout(() => {
-          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-          }
-        }, 30000);
-        
+        setTimeout(() => { if (mediaRecorder.state !== 'inactive') mediaRecorder.stop(); }, 30000);
         mediaRecorder.start();
-      } catch(e) {
-        console.log('MediaRecorder error:', e);
-        stopListening();
-        if (isOn) startWakeWordDetection();
-      }
+      } catch(e) { stopListening(); if (isOn) startWakeWordDetection(); }
     }
-    
-    // === Send to Gateway ===
-    async function sendToGateway(text) {
-      isThinking = true;
-      stopListening();
-      setStatus('thinking', 'PROCESEZ...');
-      
-      try {
-        const res = await fetch(`${gatewayUrl}/api/voice`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${gatewayToken}`
-          },
-          body: JSON.stringify({
-            text: text,
-            session: 'pwa-voice',
-            respondWithAudio: true
-          }),
-          signal: AbortSignal.timeout(60000)
-        });
-        
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        
-        const data = await res.json();
-        const responseText = data.response || data.text || data.message || 'Am primit, dar nu am un răspuns.';
-        
-        // Show response
-        addChatBubble(responseText, 'lola');
-        document.getElementById('response-text').textContent = responseText;
-        document.getElementById('response').classList.add('visible');
-        
-        // Speak response
-        speakResponse(responseText);
-        
-      } catch (err) {
-        console.log('Gateway error:', err);
-        addChatBubble('Eroare: ' + err.message, 'lola');
-        setStatus('on', 'CONECTAT');
-        isThinking = false;
-        if (isOn) startWakeWordDetection();
-      }
-    }
-    
-    async function sendAudioToGateway(audioBlob) {
-      isThinking = true;
-      setStatus('thinking', 'PROCESEZ...');
-      
-      try {
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'voice.webm');
-        
-        const res = await fetch(`${gatewayUrl}/api/voice`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${gatewayToken}`
-          },
-          body: formData,
-          signal: AbortSignal.timeout(60000)
-        });
-        
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        
-        const data = await res.json();
-        const responseText = data.response || data.text || 'Am prims.';
-        
-        addChatBubble(responseText, 'lola');
-        document.getElementById('response-text').textContent = responseText;
-        document.getElementById('response').classList.add('visible');
-        
-        speakResponse(responseText);
-        
-      } catch (err) {
-        console.log('Audio gateway error:', err);
-        addChatBubble('Eroare: ' + err.message, 'lola');
-        setStatus('on', 'CONECTAT');
-        isThinking = false;
-        if (isOn) startWakeWordDetection();
-      }
-    }
-    
-    // === TTS (Text-to-Speech) ===
+
+    // === TTS ===
     function speakResponse(text) {
-      isSpeaking = true;
-      isThinking = false;
+      isSpeaking = true; isThinking = false;
       setStatus('speaking', 'VORBESC...');
-      
       if ('speechSynthesis' in window) {
-        // Cancel any ongoing speech
         window.speechSynthesis.cancel();
-        
         const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Set language based on preference
-        if (ttsVoice === 'auto') {
-          utterance.lang = navigator.language || 'ro-RO';
-        } else {
-          utterance.lang = ttsVoice;
-        }
-        
-        // Try to find a matching voice
+        utterance.lang = ttsVoice === 'auto' ? (navigator.language || 'ro-RO') : ttsVoice;
         const voices = window.speechSynthesis.getVoices();
-        const matchVoice = voices.find(v => v.lang === utterance.lang) ||
-                          voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
+        const matchVoice = voices.find(v => v.lang === utterance.lang) || voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
         if (matchVoice) utterance.voice = matchVoice;
-        
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
-        
-        utterance.onend = () => {
-          stopSpeaking();
-          if (isOn) startWakeWordDetection();
-        };
-        
-        utterance.onerror = (e) => {
-          console.log('TTS error:', e);
-          stopSpeaking();
-          if (isOn) startWakeWordDetection();
-        };
-        
+        utterance.rate = 1.0; utterance.pitch = 1.0;
+        utterance.onend = () => { stopSpeaking(); if (isOn) startWakeWordDetection(); };
+        utterance.onerror = () => { stopSpeaking(); if (isOn) startWakeWordDetection(); };
         window.speechSynthesis.speak(utterance);
-      } else {
-        // No TTS support
-        console.log('Speech synthesis not available');
-        stopSpeaking();
-        if (isOn) startWakeWordDetection();
-      }
+      } else { stopSpeaking(); if (isOn) startWakeWordDetection(); }
     }
-    
+
     function stopSpeaking() {
       isSpeaking = false;
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-      if (isConnected && !isListening && !isThinking) {
-        setStatus('on', 'CONECTAT');
-      }
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if (isConnected && !isListening && !isThinking) setStatus('on', 'CONECTAT');
     }
-    
-    // === Polling for proactive messages ===
-    function startPolling() {
-      stopPolling();
-      lastPollTime = Date.now();
-      pollTimer = setInterval(async () => {
-        if (!isOn || isListening || isThinking || isSpeaking) return;
-        
-        try {
-          const res = await fetch(`${gatewayUrl}/api/voice/poll?since=${lastPollTime}`, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${gatewayToken}` },
-            signal: AbortSignal.timeout(10000)
-          });
-          
-          if (res.ok) {
-            const data = await res.json();
-            if (data.messages && data.messages.length > 0) {
-              for (const msg of data.messages) {
-                addChatBubble(msg.text, 'lola');
-                speakResponse(msg.text);
-              }
-            }
-          }
-          lastPollTime = Date.now();
-        } catch (e) {
-          // Silent fail
-        }
-      }, 15000); // Poll every 15 seconds
-    }
-    
-    function stopPolling() {
-      if (pollTimer) {
-        clearInterval(pollTimer);
-        pollTimer = null;
-      }
-    }
-    
-    // === Service Worker Registration ===
+
+    // === Service Worker ===
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error:', e));
     }
-    
-    // === Initialize ===
-    if (!gatewayUrl) {
-      // First run - show settings
-      toggleSettings();
-    }
-    
-    // Load voices for TTS
+
+    // === Init ===
+    if (!gatewayUrl) toggleSettings();
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        console.log('Voices loaded:', window.speechSynthesis.getVoices().length);
-      };
+      window.speechSynthesis.onvoiceschanged = () => console.log('Voices loaded:', window.speechSynthesis.getVoices().length);
     }
   </script>
 </body>
