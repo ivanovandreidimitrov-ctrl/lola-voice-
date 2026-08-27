@@ -88,6 +88,8 @@
     .chat-bubble.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
     .chat-bubble.lola { align-self: flex-start; background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
     .chat-bubble .timestamp { font-size: 10px; opacity: 0.6; margin-top: 4px; }
+    .chat-bubble.pending { align-self: flex-end; background: rgba(255,165,0,0.15); color: #ffa500; border: 1px dashed #ffa500; border-bottom-right-radius: 4px; }
+    .chat-bubble.pending .timestamp::after { content: ' \23F3 PENDING'; color: #ffa500; font-weight: 600; }
     .settings-panel {
       display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; padding: 20px;
@@ -293,7 +295,8 @@
       bubble.innerHTML = text + '<div class="timestamp">' + time + '</div>';
       log.appendChild(bubble);
       log.scrollTop = log.scrollHeight;
-      while (log.children.length > 20) log.removeChild(log.firstChild);
+      while (log.children.length > 50) log.removeChild(log.firstChild);
+      return bubble;
     }
 
     // === Power ===
@@ -526,22 +529,33 @@
       streamedText = '';
       setStatus('thinking', 'PROCESEZ...');
 
-      // Trimite mesajul prin sessions.steer (intrerupe un run activ daca exista).
-      // ATENTIE: protocolul foloseste parametrul "key" (NU "sessionKey") —
-      // additionalProperties:false ar respinge "sessionKey".
-      // Protocolul oficial WebChat folosește chat.send (NU sessions.steer).
-      // chat.send trimite mesajul in sesiune si gateway-ul returneaza runId + status.
-      // Raspunsul streameaza via event "chat" cu payload.state: delta|final.
+      // Adaugă mesajul utilizatorului în istoric
+      var pendingBubble = addChatBubble(text, 'user');
+      pendingBubble.classList.add('pending');
+
+      // Timeout: după 10 secunde fără răspuns, marcăm ca pending
+      var pendingTimeout = setTimeout(function() {
+        if (isThinking) {
+          isThinking = false;
+          if (isConnected && !isListening) setStatus('on', 'CONECTAT');
+          document.getElementById('voice-status').textContent = 'Mesaj în pending ⏳ - aștept răspuns gateway';
+          if (isOn) startWakeWordDetection();
+        }
+      }, 10000);
+
       client.request('chat.send', { sessionKey: SESSION_KEY, message: text, idempotencyKey: (crypto.randomUUID ? crypto.randomUUID() : 'k' + (++rpcCounter)) })
         .then((ack) => {
+          clearTimeout(pendingTimeout);
           console.log('chat.send ack:', ack && ack.status, ack && ack.runId);
+          pendingBubble.classList.remove('pending');
           document.getElementById('voice-status').textContent = 'Trimis OK: ' + (ack && ack.status || 'ack');
         })
         .catch((e) => {
+          clearTimeout(pendingTimeout);
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
           addChatBubble('⚠️ EROARE: ' + (e.message || 'eroare gateway'), 'lola');
-          document.getElementById('voice-status').textContent = 'EROARE chat.send: ' + (e.message || 'unknown');
+          document.getElementById('voice-status').textContent = 'EROARE: ' + (e.message || 'unknown');
           if (isOn) startWakeWordDetection();
         });
     }
