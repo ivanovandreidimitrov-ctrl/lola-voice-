@@ -246,12 +246,13 @@
         minProtocol: 4,
         maxProtocol: 4,
         client: {
-          id: 'webchat-ui',
-          version: '3.0.0',
+          id: 'openclaw-control-ui',
+          version: '3.1.0',
           platform: 'web',
-          mode: 'webchat',
-          scopes: ['operator.write', 'operator.read', 'operator.admin']
+          mode: 'webchat'
         },
+        role: 'operator',
+        scopes: ['operator.read', 'operator.write'],
         caps: ['tool-events'],
         auth: gatewayToken ? { token: gatewayToken } : undefined,
         locale: navigator.language || 'ro-RO',
@@ -368,13 +369,15 @@
           startWakeWordDetection();
 
           // 2) Subscriere la mesajele sesiunii (sosesc ca event "chat")
-          // Protocol oficial: chat.history pentru a primi istoric + evenimente live
+          // Protocol oficial: chat.history pentru istoric + sessions.messages.subscribe pentru evenimente live
           try {
             await client.request('chat.history', { sessionKey: SESSION_KEY });
+            await client.request('sessions.messages.subscribe', { key: SESSION_KEY });
             subscribed = true;
-            console.log('subscribed to chat history for session', SESSION_KEY);
+            console.log('subscribed to chat history + events for session', SESSION_KEY);
           } catch (e) {
-            console.log('chat.history failed:', e.message);
+            console.log('history/subscribe failed:', e.message);
+            document.getElementById('voice-status').textContent = 'EROARE subscribe: ' + e.message;
           }
 
           // 3) Flush texte trimise inainte de connect (si cadre audio fallback raw)
