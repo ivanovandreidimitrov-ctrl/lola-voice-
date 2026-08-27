@@ -206,7 +206,7 @@
     // Handshake: dupa WS open se trimite un req method "connect" (auth la params.auth.token);
     //   raspuns hello-ok. Apoi subscriere la sessions.messages.subscribe.
     // Mesajele abonate sosesc ca event "chat" cu payload.state: delta|final|aborted|error.
-    const SESSION_KEY = localStorage.getItem('lola_session_key') || 'pwa-voice';
+    const SESSION_KEY = localStorage.getItem('lola_session_key') || 'agent:main:main';
     let streamedText = '';   // text asistant acumulat din delta event-uri
     let subscribed = false;  // sesiunea e abonata la messages.subscribe
     let rpcCounter = 0;      // fallback id generator daca crypto.randomUUID lipseste
