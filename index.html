@@ -357,6 +357,7 @@
             throw new Error('hello-ok lipsa');
           }
           console.log('hello-ok, protocol', hello.protocol, 'connId', hello.server && hello.server.connId);
+          document.getElementById('voice-status').textContent = 'Handshake OK! Protocol: ' + (hello.protocol || 'ok');
           isConnected = true;
           setStatus('on', 'CONECTAT');
           document.getElementById('wake-hint').classList.add('active');
@@ -381,6 +382,7 @@
           console.log('connect failed:', e.message);
           isConnected = false;
           setStatus('off', 'AUTENTIFICARE EȘUATĂ');
+          document.getElementById('voice-status').textContent = 'EROARE connect: ' + e.message;
         }
       };
 
@@ -533,11 +535,13 @@
       client.request('chat.send', { sessionKey: SESSION_KEY, message: text, idempotencyKey: (crypto.randomUUID ? crypto.randomUUID() : 'k' + (++rpcCounter)) })
         .then((ack) => {
           console.log('chat.send ack:', ack && ack.status, ack && ack.runId);
+          document.getElementById('voice-status').textContent = 'Trimis OK: ' + (ack && ack.status || 'ack');
         })
         .catch((e) => {
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          addChatBubble('⚠️ ' + (e.message || 'eroare gateway'), 'lola');
+          addChatBubble('⚠️ EROARE: ' + (e.message || 'eroare gateway'), 'lola');
+          document.getElementById('voice-status').textContent = 'EROARE chat.send: ' + (e.message || 'unknown');
           if (isOn) startWakeWordDetection();
         });
     }
