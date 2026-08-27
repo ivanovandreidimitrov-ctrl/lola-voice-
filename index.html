@@ -198,6 +198,54 @@
     let ws = null, wsReconnectTimer = null, messageQueue = [];
     let pendingResponseResolve = null;
 
+    // === OpenClaw Gateway protocol state ===
+    // Protocolul NU e JSON-RPC 2.0, ci un protocol propriu cu 3 tipuri de frame:
+    //   req:    {type:"req", id, method, params}
+    //   res:    {type:"res", id, ok, payload?|error?}
+    //   event:  {type:"event", event, payload, seq?}
+    // Handshake: dupa WS open se trimite un req method "connect" (auth la params.auth.token);
+    //   raspuns hello-ok. Apoi subscriere la sessions.messages.subscribe.
+    // Mesajele abonate sosesc ca event "chat" cu payload.state: delta|final|aborted|error.
+    const SESSION_KEY = localStorage.getItem('lola_session_key') || 'pwa-voice';
+    let streamedText = '';   // text asistant acumulat din delta event-uri
+    let subscribed = false;  // sesiunea e abonata la messages.subscribe
+    let rpcCounter = 0;      // fallback id generator daca crypto.randomUUID lipseste
+
+    // Client shim cu API .request(method, params) ca in Control UI-ul oficial.
+    const client = {
+      pending: new Map(), // id -> {resolve, reject}
+      request(method, params) {
+        const id = (crypto.randomUUID ? crypto.randomUUID() : 'r' + (++rpcCounter));
+        return new Promise((resolve, reject) => {
+          client.pending.set(id, { resolve, reject });
+          sendFrame({ type: 'req', id, method, params });
+        });
+      }
+    };
+
+    // Trimite un frame JSON doar daca WS e deschis (pentru req-uri; nu le coada).
+    function sendFrame(obj) {
+      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+    }
+
+    // Parametri pentru handshake-ul "connect" (identitate: webchat-ui).
+    function connectParams() {
+      return {
+        minProtocol: 4,
+        maxProtocol: 4,
+        client: {
+          id: 'webchat-ui',
+          version: '3.0.0',
+          platform: 'web',
+          mode: 'webchat'
+        },
+        caps: ['tool-events'],
+        auth: gatewayToken ? { token: gatewayToken } : undefined,
+        locale: navigator.language || 'ro-RO',
+        userAgent: navigator.userAgent
+      };
+    }
+
     // === UI ===
     function setStatus(status, text) {
       const badge = document.getElementById('status-badge');
@@ -251,6 +299,7 @@
 
     function powerOff() {
       isOn = false; isConnected = false; isListening = false; isThinking = false; isSpeaking = false;
+      subscribed = false; streamedText = '';
       document.getElementById('power-button').classList.remove('on');
       document.getElementById('power-label').textContent = 'OFF';
       document.getElementById('wake-hint').style.display = 'none';
@@ -266,28 +315,50 @@
     // === WebSocket ===
     function connectWebSocket() {
       disconnectWebSocket();
-      // Convert HTTPS to WSS
+      // Convert HTTPS to WSS. Auth NU se pune pe subprotocol/query —
+      // se trimite in frame-ul "connect" dupa deschiderea WS (params.auth.token).
       const wsUrl = gatewayUrl.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
       console.log('Connecting to:', wsUrl);
 
       try {
-        ws = new WebSocket(wsUrl, ['openclaw.token.' + gatewayToken]);
+        ws = new WebSocket(wsUrl);
       } catch (e) {
-        // Fallback: try query param
-        try { ws = new WebSocket(wsUrl + '?token=' + encodeURIComponent(gatewayToken)); }
-        catch (e2) { setStatus('off', 'DECONECTAT'); isOn = false; return; }
+        setStatus('off', 'DECONECTAT'); isOn = false; return;
       }
 
-      ws.onopen = () => {
-        console.log('WebSocket connected');
-        isConnected = true;
-        setStatus('on', 'CONECTAT');
-        document.getElementById('wake-hint').classList.add('active');
-        startWakeWordDetection();
-        // Flush queued messages
-        while (messageQueue.length > 0) {
-          const msg = messageQueue.shift();
-          ws.send(JSON.stringify(msg));
+      ws.onopen = async () => {
+        console.log('WebSocket connected — handshake connect...');
+        setStatus('on', 'CONECTARE...');
+        try {
+          // 1) Handshake: req method "connect" (auth la params.auth.token)
+          const hello = await client.request('connect', connectParams());
+          if (!hello || hello.type !== 'hello-ok') {
+            throw new Error('hello-ok lipsa');
+          }
+          console.log('hello-ok, protocol', hello.protocol, 'connId', hello.server && hello.server.connId);
+          isConnected = true;
+          setStatus('on', 'CONECTAT');
+          document.getElementById('wake-hint').classList.add('active');
+          startWakeWordDetection();
+
+          // 2) Subscriere la mesajele sesiunii (sosesc ca event "chat")
+          try {
+            await client.request('sessions.messages.subscribe', { key: SESSION_KEY });
+            subscribed = true;
+            console.log('subscribed to session', SESSION_KEY);
+          } catch (e) {
+            console.log('subscribe failed:', e.message);
+          }
+
+          // 3) Flush texte trimise inainte de connect (si cadre audio fallback raw)
+          while (messageQueue.length > 0) {
+            const msg = messageQueue.shift();
+            ws.send(JSON.stringify(msg));
+          }
+        } catch (e) {
+          console.log('connect failed:', e.message);
+          isConnected = false;
+          setStatus('off', 'AUTENTIFICARE EȘUATĂ');
         }
       };
 
@@ -323,6 +394,12 @@
         try { ws.close(); } catch (e) {}
         ws = null;
       }
+      // Respinge req-uri inca pending (altfel ar atarna pana la timeout infinit).
+      subscribed = false;
+      if (client.pending.size) {
+        for (const p of client.pending.values()) p.reject(new Error('ws disconnected'));
+        client.pending.clear();
+      }
     }
 
     function sendWsMessage(msg) {
@@ -334,83 +411,111 @@
     }
 
     function handleWsMessage(data) {
-      // OpenClaw WebSocket protocol: handle different event types
-      const eventType = data.type || data.event || '';
-      const payload = data.payload || data.data || data;
+      // OpenClaw Gateway protocol: frame-uri discriminate dupa "type".
+      if (!data || typeof data.type !== 'string') {
+        console.log('Non-protocol frame:', data);
+        return;
+      }
 
-      // Assistant text response
-      if (eventType === 'assistant' || eventType === 'assistant.delta' || eventType === 'chat.message' || data.role === 'assistant') {
-        let text = '';
-        if (typeof payload === 'string') text = payload;
-        else if (payload.text) text = payload.text;
-        else if (payload.content) text = payload.content;
-        else if (payload.message) text = payload.message;
-        else if (data.text) text = data.text;
+      // Raspuns la un req: rezolva promise-ul pending dupa id.
+      if (data.type === 'res') {
+        const p = client.pending.get(data.id);
+        if (!p) return;
+        client.pending.delete(data.id);
+        if (data.ok) p.resolve(data.payload);
+        else p.reject(new Error((data.error && data.error.message) || ('request failed: ' + (data.error && data.error.code || 'unknown'))));
+        return;
+      }
 
-        if (text && text.trim()) {
-          // Check if this is a final message (not streaming delta)
-          const isFinal = eventType === 'assistant' || eventType === 'chat.message' || data.final === true;
+      // Event (notificare server). Mesajele abonate sosesc ca event "chat".
+      if (data.type === 'event') {
+        if (data.event === 'connect.challenge') {
+          // Fara device identity — ignoram nonce-ul (conectam cu usedFallback).
+          return;
+        }
+        if (data.event === 'chat') {
+          handleChatEvent(data.payload);
+          return;
+        }
+        // Alte event-uri (tool, session, etc.) — nu afecteaza UI-ul de voce.
+        return;
+      }
 
-          if (isFinal) {
-            addChatBubble(text, 'lola');
-            document.getElementById('response-text').textContent = text;
-            document.getElementById('response').classList.add('visible');
-            isThinking = false;
-            speakResponse(text);
-          } else {
-            // Streaming delta - update response text live
-            document.getElementById('response-text').textContent = text;
-            document.getElementById('response').classList.add('visible');
-          }
+      console.log('Unhandled frame type:', data);
+    }
+
+    // Proceseaza un event "chat" (payload cu state: delta|final|aborted|error).
+    function handleChatEvent(p) {
+      if (!p) return;
+      const state = p.state;
+
+      if (state === 'delta') {
+        // deltaText: text incremental; replace:true inseamna refresh complet (nu append).
+        if (p.replace) streamedText = p.deltaText || '';
+        else streamedText += (p.deltaText || '');
+        if (streamedText) {
+          document.getElementById('response-text').textContent = streamedText;
+          document.getElementById('response').classList.add('visible');
         }
         return;
       }
 
-      // Thinking/status events
-      if (eventType === 'thinking' || eventType === 'tool_call' || eventType === 'tool') {
-        // Keep thinking state
-        return;
-      }
-
-      // Hello/connected event
-      if (eventType === 'hello' || eventType === 'connected') {
-        console.log('Gateway hello:', payload);
-        return;
-      }
-
-      // Session events
-      if (eventType === 'session' || eventType === 'session.message') {
-        console.log('Session event:', payload);
-        return;
-      }
-
-      // Generic message with text
-      if (data.text || data.message || data.response) {
-        const text = data.text || data.message || data.response;
+      if (state === 'final') {
+        // Mesajul final: folosim continutul canonic din p.message.content (array de {type:"text", text}).
+        let text = streamedText;
+        try {
+          if (p.message && Array.isArray(p.message.content)) {
+            const joined = p.message.content.map(b => (b && b.text) || '').join('');
+            if (joined) text = joined;
+          } else if (p.message && typeof p.message.content === 'string') {
+            text = p.message.content;
+          }
+        } catch (e) {}
+        streamedText = '';
         if (text && text.trim()) {
           addChatBubble(text, 'lola');
           document.getElementById('response-text').textContent = text;
           document.getElementById('response').classList.add('visible');
           isThinking = false;
           speakResponse(text);
+        } else {
+          isThinking = false;
+          if (isConnected && !isListening) setStatus('on', 'CONECTAT');
+          if (isOn) startWakeWordDetection();
         }
         return;
       }
 
-      console.log('Unhandled WS message:', data);
+      if (state === 'aborted' || state === 'error') {
+        streamedText = '';
+        isThinking = false;
+        console.log('chat', state, p.errorMessage || '');
+        if (isConnected && !isListening) setStatus('on', 'CONECTAT');
+        if (isOn) startWakeWordDetection();
+        return;
+      }
     }
 
     function sendTextToGateway(text) {
       isThinking = true;
       stopListening();
+      streamedText = '';
       setStatus('thinking', 'PROCESEZ...');
 
-      // OpenClaw WebSocket message format for chat
-      sendWsMessage({
-        type: 'chat',
-        text: text,
-        session: 'pwa-voice'
-      });
+      // Trimite mesajul prin sessions.steer (intrerupe un run activ daca exista).
+      // ATENTIE: protocolul foloseste parametrul "key" (NU "sessionKey") —
+      // additionalProperties:false ar respinge "sessionKey".
+      client.request('sessions.steer', { key: SESSION_KEY, message: text })
+        .then((ack) => {
+          // Ack imediat ({runId, status:"started", messageSeq, ...}); raspunsul streameaza via event "chat".
+          console.log('steer ack:', ack && ack.status);
+        })
+        .catch((e) => {
+          isThinking = false;
+          if (isConnected && !isListening) setStatus('on', 'CONECTAT');
+          addChatBubble('⚠️ ' + (e.message || 'eroare gateway'), 'lola');
+          if (isOn) startWakeWordDetection();
+        });
     }
 
     // === Wake Word ===
