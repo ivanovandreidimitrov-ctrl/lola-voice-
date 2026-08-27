@@ -351,12 +351,13 @@
           startWakeWordDetection();
 
           // 2) Subscriere la mesajele sesiunii (sosesc ca event "chat")
+          // Protocol oficial: chat.history pentru a primi istoric + evenimente live
           try {
-            await client.request('sessions.messages.subscribe', { key: SESSION_KEY });
+            await client.request('chat.history', { sessionKey: SESSION_KEY });
             subscribed = true;
-            console.log('subscribed to session', SESSION_KEY);
+            console.log('subscribed to chat history for session', SESSION_KEY);
           } catch (e) {
-            console.log('subscribe failed:', e.message);
+            console.log('chat.history failed:', e.message);
           }
 
           // 3) Flush texte trimise inainte de connect (si cadre audio fallback raw)
@@ -514,10 +515,12 @@
       // Trimite mesajul prin sessions.steer (intrerupe un run activ daca exista).
       // ATENTIE: protocolul foloseste parametrul "key" (NU "sessionKey") —
       // additionalProperties:false ar respinge "sessionKey".
-      client.request('sessions.steer', { key: SESSION_KEY, message: text })
+      // Protocolul oficial WebChat folosește chat.send (NU sessions.steer).
+      // chat.send trimite mesajul in sesiune si gateway-ul returneaza runId + status.
+      // Raspunsul streameaza via event "chat" cu payload.state: delta|final.
+      client.request('chat.send', { sessionKey: SESSION_KEY, message: text })
         .then((ack) => {
-          // Ack imediat ({runId, status:"started", messageSeq, ...}); raspunsul streameaza via event "chat".
-          console.log('steer ack:', ack && ack.status);
+          console.log('chat.send ack:', ack && ack.status, ack && ack.runId);
         })
         .catch((e) => {
           isThinking = false;
