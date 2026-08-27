@@ -270,6 +270,8 @@
       localStorage.setItem(WAKE_KEY, wakeWord);
       localStorage.setItem(TTS_KEY, ttsVoice);
       toggleSettings();
+      // DEBUG: arată pe ecran ce s-a salvat
+      document.getElementById('voice-status').textContent = 'Salvat: URL=' + (gatewayUrl ? 'OK' : 'GOL') + ' Token=' + (gatewayToken ? 'OK' : 'GOL');
       if (isOn) { powerOff(); setTimeout(() => powerOn(), 500); }
     }
 
@@ -288,7 +290,14 @@
     async function togglePower() { if (isOn) powerOff(); else await powerOn(); }
 
     async function powerOn() {
-      if (!gatewayUrl) { toggleSettings(); return; }
+      // Re-citește din localStorage în caz că a fost salvat
+      gatewayUrl = localStorage.getItem(GATEWAY_KEY) || gatewayUrl || '';
+      gatewayToken = localStorage.getItem(TOKEN_KEY) || gatewayToken || '';
+      if (!gatewayUrl) {
+        document.getElementById('voice-status').textContent = 'EROARE: Gateway URL lipsește! Pune-l în setări ⚙️';
+        toggleSettings();
+        return;
+      }
       isOn = true;
       document.getElementById('power-button').classList.add('on');
       document.getElementById('power-label').textContent = 'ON';
