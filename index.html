@@ -518,7 +518,7 @@
       // Protocolul oficial WebChat folosește chat.send (NU sessions.steer).
       // chat.send trimite mesajul in sesiune si gateway-ul returneaza runId + status.
       // Raspunsul streameaza via event "chat" cu payload.state: delta|final.
-      client.request('chat.send', { sessionKey: SESSION_KEY, message: text })
+      client.request('chat.send', { sessionKey: SESSION_KEY, message: text, idempotencyKey: (crypto.randomUUID ? crypto.randomUUID() : 'k' + (++rpcCounter)) })
         .then((ack) => {
           console.log('chat.send ack:', ack && ack.status, ack && ack.runId);
         })
