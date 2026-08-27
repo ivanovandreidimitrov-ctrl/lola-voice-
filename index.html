@@ -249,7 +249,8 @@
           id: 'webchat-ui',
           version: '3.0.0',
           platform: 'web',
-          mode: 'webchat'
+          mode: 'webchat',
+          scopes: ['operator.write', 'operator.read', 'operator.admin']
         },
         caps: ['tool-events'],
         auth: gatewayToken ? { token: gatewayToken } : undefined,
