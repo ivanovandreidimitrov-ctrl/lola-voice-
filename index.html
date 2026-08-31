@@ -153,6 +153,11 @@
 
   <div class="chat-log" id="chat-log" style="flex:1; max-height:none;"></div>
 
+  <div class="text-input-bar" style="display:flex; gap:8px; padding:10px 16px; background:var(--bg-card); border-top:1px solid var(--border);">
+    <input type="text" id="text-input" placeholder="Scrie mesaj..." style="flex:1; background:var(--bg-input); border:1px solid var(--border); border-radius:12px; padding:12px 16px; color:var(--text); font-size:15px; outline:none;">
+    <button id="text-send" onclick="sendTextMessage()" style="background:var(--accent); color:#fff; border:none; border-radius:12px; padding:12px 20px; font-size:15px; cursor:pointer; font-weight:600;">➤</button>
+  </div>
+
   <div class="footer">
     <div>🧭 Lola Voice v3.1</div>
   </div>
@@ -563,6 +568,19 @@
           if (isOn) startWakeWordDetection();
         });
     }
+
+    // === Text Input ===
+    function sendTextMessage() {
+      const input = document.getElementById('text-input');
+      const text = input.value.trim();
+      if (!text || !isConnected) return;
+      input.value = '';
+      sendTextToGateway(text);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      const ti = document.getElementById('text-input');
+      if (ti) ti.addEventListener('keydown', function(e) { if (e.key === 'Enter') sendTextMessage(); });
+    });
 
     // === Wake Word ===
     function startWakeWordDetection() {
