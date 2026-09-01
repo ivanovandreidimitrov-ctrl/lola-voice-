@@ -41,15 +41,7 @@
     @keyframes pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(76,175,80,0.4); } 50% { box-shadow: 0 0 0 8px rgba(76,175,80,0); } }
     @keyframes pulse-orange { 0%,100% { box-shadow: 0 0 0 0 rgba(255,107,53,0.4); } 50% { box-shadow: 0 0 0 12px rgba(255,107,53,0); } }
     @keyframes pulse-blue { 0%,100% { box-shadow: 0 0 0 0 rgba(33,150,243,0.4); } 50% { box-shadow: 0 0 0 8px rgba(33,150,243,0); } }
-    .main {
-      flex: 0 0 auto; display: flex; flex-direction: row; align-items: center;
-      justify-content: center; padding: 4px 12px; gap: 8px; overflow: hidden;
-    }
-    .voice-orb {
-      width: 48px; height: 48px; border-radius: 50%; background: var(--card);
-      border: 2px solid var(--border); display: flex; align-items: center;
-      justify-content: center; font-size: 20px; transition: all 0.3s ease; position: relative; flex-shrink: 0;
-    }
+    /* .main removed — merged into power-bar row */
     .voice-orb.idle { border-color: var(--text-dim); }
     .voice-orb.listening { border-color: var(--accent); background: rgba(255,107,53,0.1); box-shadow: 0 0 40px var(--accent-glow); animation: orb-pulse 1.5s infinite; }
     .voice-orb.thinking { border-color: var(--blue); background: rgba(33,150,243,0.1); box-shadow: 0 0 30px rgba(33,150,243,0.3); }
@@ -108,9 +100,9 @@
     .settings-icon { cursor: pointer; font-size: 20px; opacity: 0.7; }
     .power-bar { padding: 4px 12px; flex-shrink: 0; }
     .power-bar-button {
-      width: 50%; margin: 0 auto; padding: 7px; border: none; border-radius: 10px;
-      font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 6px 14px; border: none; border-radius: 8px;
+      font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
       letter-spacing: 1px; text-transform: uppercase;
     }
     .power-bar-button.off { background: rgba(244,67,54,0.15); color: var(--red); border: 1px solid var(--red); }
@@ -134,24 +126,17 @@
     <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
   </div>
 
-  <div class="power-bar">
-    <button class="power-bar-button off" id="power-button" onclick="togglePower()">⏻ OFF</button>
+  <div class="power-bar" style="display:flex; align-items:center; gap:8px; padding:4px 12px;">
+    <button class="power-bar-button off" id="power-button" onclick="togglePower()" style="width:auto; flex:0 0 auto; padding:6px 14px;">⏻ OFF</button>
+    <div class="voice-orb idle" id="voice-orb" style="width:32px; height:32px; font-size:16px; border-width:2px; flex-shrink:0;">🧭</div>
+    <div class="voice-status-text" id="voice-status" style="flex:1; text-align:left; font-size:11px;">Apasă ON</div>
+    <div class="wake-hint" id="wake-hint" style="display:none; flex:0 0 auto; max-width:none; padding:2px 8px; font-size:10px;">Spune "Hey Lola"</div>
   </div>
 
-  <div class="main">
-    <div class="voice-orb idle" id="voice-orb">🧭</div>
-    <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
-      <div class="voice-status-text" id="voice-status">Apasă ON pentru a conecta</div>
-      <div class="wake-hint" id="wake-hint" style="display:none">
-        Spune <strong>"Hey Lola"</strong> pentru a începe
-      </div>
-    </div>
-  </div>
-
-  <div class="voice-transcript" id="transcript"></div>
-  <div class="voice-response" id="response">
-    <div class="response-label">🧭 LOLA:</div>
-    <div id="response-text"></div>
+  <div class="voice-transcript" id="transcript" style="padding:4px 12px; max-height:40px;"></div>
+  <div class="voice-response" id="response" style="padding:4px 12px; max-height:50px;">
+    <div class="response-label" style="font-size:10px;">🧭 LOLA:</div>
+    <div id="response-text" style="font-size:12px;"></div>
   </div>
 
   <div class="chat-log" id="chat-log"></div>
