@@ -1,5 +1,5 @@
 // Lola Voice Service Worker
-const CACHE_NAME = 'lola-voice-v12';
+const CACHE_NAME = 'lola-voice-v13';
 const ASSETS = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', (e) => {
