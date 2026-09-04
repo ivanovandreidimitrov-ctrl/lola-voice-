@@ -209,7 +209,7 @@
     // Handshake: dupa WS open se trimite un req method "connect" (auth la params.auth.token);
     //   raspuns hello-ok. Apoi subscriere la sessions.messages.subscribe.
     // Mesajele abonate sosesc ca event "chat" cu payload.state: delta|final|aborted|error.
-    const SESSION_KEY = localStorage.getItem('lola_session_key') || 'agent:main:telegram:direct:8135678824';
+    const SESSION_KEY = localStorage.getItem('lola_session_key') || 'agent:main:pwa-voice';
     let streamedText = '';   // text asistant acumulat din delta event-uri
     let subscribed = false;  // sesiunea e abonata la messages.subscribe
     let rpcCounter = 0;      // fallback id generator daca crypto.randomUUID lipseste
@@ -353,7 +353,9 @@
             throw new Error('hello-ok lipsa');
           }
           console.log('hello-ok, protocol', hello.protocol, 'connId', hello.server && hello.server.connId);
-          document.getElementById('voice-status').textContent = 'Handshake OK! Protocol: ' + (hello.protocol || 'ok');
+          const scopes = (hello.auth && hello.auth.scopes) || [];
+          const mainSK = (hello.snapshot && hello.snapshot.sessionDefaults && hello.snapshot.sessionDefaults.mainSessionKey) || '?';
+          document.getElementById('voice-status').textContent = 'OK scopes:' + scopes.join(',') + ' | sk:' + SESSION_KEY;
           isConnected = true;
           setStatus('on', 'CONECTAT');
           document.getElementById('wake-hint').classList.add('active');
@@ -469,6 +471,7 @@
     // Proceseaza un event "chat" (payload cu state: delta|final|aborted|error).
     function handleChatEvent(p) {
       if (!p) return;
+      if (p.sessionKey && p.sessionKey !== SESSION_KEY) return; // FILTRU: doar evenimente pentru sesiunea noastră
       const state = p.state;
 
       if (state === 'delta') {
@@ -570,6 +573,7 @@
 
     // === Wake Word ===
     function startWakeWordDetection() {
+      if (wakeRecognition) return; // previne dublu-start
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) { console.log('SpeechRecognition not available'); return; }
       wakeRecognition = new SR();
