@@ -120,7 +120,7 @@
 </head>
 <body>
   <div class="header">
-    <div class="header-title">🧭 Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v3.8</span></div>
+    <div class="header-title">🧭 Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v4.0</span></div>
     <div class="status-badge status-off" id="status-badge">
       <span class="status-dot"></span>
       <span id="status-text">DECONECTAT</span>
@@ -209,7 +209,7 @@
     // Handshake: dupa WS open se trimite un req method "connect" (auth la params.auth.token);
     //   raspuns hello-ok. Apoi subscriere la sessions.messages.subscribe.
     // Mesajele abonate sosesc ca event "chat" cu payload.state: delta|final|aborted|error.
-    // SESSION_KEY: folosește sesiunea Telegram a lui Andrei pentru ca Lola să vadă mesajele
+    // SESSION_KEY: sesiunea Telegram a lui Andrei — Lola primește mesajele direct
     const SESSION_KEY = localStorage.getItem('lola_session_key') || 'agent:main:telegram:direct:8135678824';
     let streamedText = '';   // text asistant acumulat din delta event-uri
     let subscribed = false;  // sesiunea e abonata la messages.subscribe
@@ -498,17 +498,14 @@
           }
         } catch (e) {}
         streamedText = '';
-        // Filtrează NO_REPLY (răspuns intern OpenClaw care nu trebuie afișat)
+        // Filtrează NO_REPLY (răspuns intern OpenClaw)
         let displayText = text;
         if (displayText && displayText.trim() === 'NO_REPLY') {
-          // Nu afișa și nu rosti — e un răspuns gol/intern
-          streamedText = '';
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
           if (isOn) startWakeWordDetection();
           return;
         }
-        // Curăță orice suffix NO_REPLY din text
         if (displayText) displayText = displayText.replace(/\s*NO_REPLY\s*/g, '').trim();
         if (displayText) {
           addChatBubble(displayText, 'lola');
