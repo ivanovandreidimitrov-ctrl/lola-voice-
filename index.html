@@ -209,7 +209,8 @@
     // Handshake: dupa WS open se trimite un req method "connect" (auth la params.auth.token);
     //   raspuns hello-ok. Apoi subscriere la sessions.messages.subscribe.
     // Mesajele abonate sosesc ca event "chat" cu payload.state: delta|final|aborted|error.
-    const SESSION_KEY = localStorage.getItem('lola_session_key') || 'agent:main:pwa-voice';
+    // SESSION_KEY: folosește sesiunea Telegram a lui Andrei pentru ca Lola să vadă mesajele
+    const SESSION_KEY = localStorage.getItem('lola_session_key') || 'agent:main:telegram:direct:8135678824';
     let streamedText = '';   // text asistant acumulat din delta event-uri
     let subscribed = false;  // sesiunea e abonata la messages.subscribe
     let rpcCounter = 0;      // fallback id generator daca crypto.randomUUID lipseste
@@ -497,12 +498,24 @@
           }
         } catch (e) {}
         streamedText = '';
-        if (text && text.trim()) {
-          addChatBubble(text, 'lola');
-          document.getElementById('response-text').textContent = text;
+        // Filtrează NO_REPLY (răspuns intern OpenClaw care nu trebuie afișat)
+        let displayText = text;
+        if (displayText && displayText.trim() === 'NO_REPLY') {
+          // Nu afișa și nu rosti — e un răspuns gol/intern
+          streamedText = '';
+          isThinking = false;
+          if (isConnected && !isListening) setStatus('on', 'CONECTAT');
+          if (isOn) startWakeWordDetection();
+          return;
+        }
+        // Curăță orice suffix NO_REPLY din text
+        if (displayText) displayText = displayText.replace(/\s*NO_REPLY\s*/g, '').trim();
+        if (displayText) {
+          addChatBubble(displayText, 'lola');
+          document.getElementById('response-text').textContent = displayText;
           document.getElementById('response').classList.add('visible');
           isThinking = false;
-          speakResponse(text);
+          speakResponse(displayText);
         } else {
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
