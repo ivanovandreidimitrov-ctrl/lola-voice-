@@ -42,12 +42,13 @@
     @keyframes pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(76,175,80,0.4); } 50% { box-shadow: 0 0 0 8px rgba(76,175,80,0); } }
     @keyframes pulse-orange { 0%,100% { box-shadow: 0 0 0 0 rgba(255,107,53,0.4); } 50% { box-shadow: 0 0 0 12px rgba(255,107,53,0); } }
     @keyframes pulse-blue { 0%,100% { box-shadow: 0 0 0 0 rgba(33,150,243,0.4); } 50% { box-shadow: 0 0 0 8px rgba(33,150,243,0); } }
-    /* .main removed — merged into power-bar row */
+    .voice-orb { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid; transition: all 0.3s; }
     .voice-orb.idle { border-color: var(--text-dim); }
     .voice-orb.listening { border-color: var(--accent); background: rgba(255,107,53,0.1); box-shadow: 0 0 40px var(--accent-glow); animation: orb-pulse 1.5s infinite; }
     .voice-orb.thinking { border-color: var(--blue); background: rgba(33,150,243,0.1); box-shadow: 0 0 30px rgba(33,150,243,0.3); }
     .voice-orb.speaking { border-color: var(--blue); background: rgba(33,150,243,0.1); box-shadow: 0 0 30px rgba(33,150,243,0.3); animation: orb-pulse 1s infinite; }
     .voice-orb.on { border-color: var(--green); background: rgba(76,175,80,0.1); }
+    .voice-orb.waking { border-color: var(--green); background: rgba(76,175,80,0.2); box-shadow: 0 0 30px rgba(76,175,80,0.4); animation: orb-pulse 1s infinite; }
     @keyframes orb-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
     .voice-status-text { font-size: 12px; color: var(--text-dim); text-align: center; min-height: 16px; }
     .voice-transcript {
@@ -63,15 +64,6 @@
     }
     .voice-response.visible { display: block; }
     .response-label { font-size: 11px; color: var(--blue); margin-bottom: 4px; font-weight: 600; }
-    .power-button {
-      width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--red);
-      background: rgba(244,67,54,0.1); color: var(--red); font-size: 32px;
-      display: flex; align-items: center; justify-content: center; cursor: pointer;
-      transition: all 0.3s ease; flex-shrink: 0;
-    }
-    .power-button.on { border-color: var(--green); background: rgba(76,175,80,0.2); color: var(--green); box-shadow: 0 0 20px rgba(76,175,80,0.3); }
-    .power-button:active { transform: scale(0.95); }
-    .power-label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
     .chat-log {
       width: 100%; flex: 1 1 auto; overflow-y: auto; padding: 8px 16px;
       display: flex; flex-direction: column; gap: 8px; min-height: 100px !important;
@@ -93,7 +85,7 @@
     .settings-card h2 { font-size: 20px; margin-bottom: 16px; }
     .settings-field { margin-bottom: 16px; }
     .settings-field label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 6px; }
-    .settings-field input { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 15px; }
+    .settings-field input, .settings-field select { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 15px; }
     .settings-field input:focus { outline: none; border-color: var(--accent); }
     .settings-buttons { display: flex; gap: 12px; margin-top: 20px; }
     .btn { flex: 1; padding: 10px 16px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
@@ -110,9 +102,10 @@
     .power-bar-button.off { background: rgba(244,67,54,0.15); color: var(--red); border: 1px solid var(--red); }
     .power-bar-button.on { background: rgba(76,175,80,0.2); color: var(--green); border: 1px solid var(--green); box-shadow: 0 0 15px rgba(76,175,80,0.2); }
     .power-bar-button:active { transform: scale(0.98); }
-    .footer { padding: 4px 16px; text-align: center; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
     .wake-hint { font-size: 11px; color: var(--text-dim); text-align: center; padding: 2px 6px; background: rgba(255,255,255,0.05); border-radius: 6px; max-width: 95%; }
     .wake-hint.active { color: var(--green); background: rgba(76,175,80,0.1); }
+    .wake-hint.listening { color: var(--accent); background: rgba(255,107,53,0.1); }
+    .debug-log { font-size: 10px; color: var(--text-dim); padding: 2px 12px; max-height: 40px; overflow-y: auto; flex: 0 0 auto; }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -120,7 +113,7 @@
 </head>
 <body>
   <div class="header">
-    <div class="header-title">🧭 Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v4.0</span></div>
+    <div class="header-title">🧭 Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v5.0</span></div>
     <div class="status-badge status-off" id="status-badge">
       <span class="status-dot"></span>
       <span id="status-text">DECONECTAT</span>
@@ -142,6 +135,8 @@
   </div>
 
   <div class="chat-log" id="chat-log" style="min-height:50vh;"></div>
+
+  <div class="debug-log" id="debug-log"></div>
 
   <div class="text-input-bar" style="display:flex; gap:8px; padding:6px 12px; background:var(--card); border-top:1px solid var(--border); flex-shrink:0;">
     <input type="text" id="text-input" placeholder="Scrie mesaj..." style="flex:1; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px 12px; color:var(--text); font-size:14px; outline:none;">
@@ -165,7 +160,7 @@
       </div>
       <div class="settings-field">
         <label for="tts-voice">Voce Răspuns (TTS)</label>
-        <select id="tts-voice" style="width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:15px;">
+        <select id="tts-voice">
           <option value="auto">Auto (limba telefonului)</option>
           <option value="ro-RO">Română</option>
           <option value="it-IT">Italiană</option>
@@ -197,27 +192,24 @@
 
     // === State ===
     let isOn = false, isConnected = false, isListening = false, isThinking = false, isSpeaking = false;
-    let recognition = null, wakeRecognition = null;
+    let isWakeListening = false;
+    let wakeRecognition = null;
     let ws = null, wsReconnectTimer = null, messageQueue = [];
-    let pendingResponseResolve = null;
+    let wakeRestartTimer = null;
+    let wakeRestartCount = 0;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let mediaStream = null;
+    let recordingTimer = null;
 
-    // === OpenClaw Gateway protocol state ===
-    // Protocolul NU e JSON-RPC 2.0, ci un protocol propriu cu 3 tipuri de frame:
-    //   req:    {type:"req", id, method, params}
-    //   res:    {type:"res", id, ok, payload?|error?}
-    //   event:  {type:"event", event, payload, seq?}
-    // Handshake: dupa WS open se trimite un req method "connect" (auth la params.auth.token);
-    //   raspuns hello-ok. Apoi subscriere la sessions.messages.subscribe.
-    // Mesajele abonate sosesc ca event "chat" cu payload.state: delta|final|aborted|error.
-    // SESSION_KEY: sesiunea Telegram a lui Andrei — Lola primește mesajele direct
+    // === OpenClaw Gateway protocol ===
     const SESSION_KEY = localStorage.getItem('lola_session_key') || 'agent:main:telegram:direct:8135678824';
-    let streamedText = '';   // text asistant acumulat din delta event-uri
-    let subscribed = false;  // sesiunea e abonata la messages.subscribe
-    let rpcCounter = 0;      // fallback id generator daca crypto.randomUUID lipseste
+    let streamedText = '';
+    let subscribed = false;
+    let rpcCounter = 0;
 
-    // Client shim cu API .request(method, params) ca in Control UI-ul oficial.
     const client = {
-      pending: new Map(), // id -> {resolve, reject}
+      pending: new Map(),
       request(method, params) {
         const id = (crypto.randomUUID ? crypto.randomUUID() : 'r' + (++rpcCounter));
         return new Promise((resolve, reject) => {
@@ -227,22 +219,14 @@
       }
     };
 
-    // Trimite un frame JSON doar daca WS e deschis (pentru req-uri; nu le coada).
     function sendFrame(obj) {
       if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
     }
 
-    // Parametri pentru handshake-ul "connect" (identitate: webchat-ui).
     function connectParams() {
       return {
-        minProtocol: 4,
-        maxProtocol: 4,
-        client: {
-          id: 'openclaw-control-ui',
-          version: '3.1.0',
-          platform: 'web',
-          mode: 'webchat'
-        },
+        minProtocol: 4, maxProtocol: 4,
+        client: { id: 'openclaw-control-ui', version: '3.1.0', platform: 'web', mode: 'webchat' },
         role: 'operator',
         scopes: ['operator.read', 'operator.write'],
         caps: ['tool-events'],
@@ -250,6 +234,16 @@
         locale: navigator.language || 'ro-RO',
         userAgent: navigator.userAgent
       };
+    }
+
+    // === Debug log ===
+    function dbg(msg) {
+      console.log('[LolaVoice] ' + msg);
+      const el = document.getElementById('debug-log');
+      if (el) {
+        const time = new Date().toLocaleTimeString('ro-RO', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        el.textContent = time + ' ' + msg;
+      }
     }
 
     // === UI ===
@@ -276,7 +270,6 @@
       localStorage.setItem(WAKE_KEY, wakeWord);
       localStorage.setItem(TTS_KEY, ttsVoice);
       toggleSettings();
-      // DEBUG: arată pe ecran ce s-a salvat
       document.getElementById('voice-status').textContent = 'Salvat: URL=' + (gatewayUrl ? 'OK' : 'GOL') + ' Token=' + (gatewayToken ? 'OK' : 'GOL');
       if (isOn) { powerOff(); setTimeout(() => powerOn(), 500); }
     }
@@ -297,7 +290,6 @@
     async function togglePower() { if (isOn) powerOff(); else await powerOn(); }
 
     async function powerOn() {
-      // Re-citește din localStorage în caz că a fost salvat
       gatewayUrl = localStorage.getItem(GATEWAY_KEY) || gatewayUrl || '';
       gatewayToken = localStorage.getItem(TOKEN_KEY) || gatewayToken || '';
       if (!gatewayUrl) {
@@ -316,13 +308,14 @@
 
     function powerOff() {
       isOn = false; isConnected = false; isListening = false; isThinking = false; isSpeaking = false;
-      subscribed = false; streamedText = '';
+      isWakeListening = false; subscribed = false; streamedText = '';
       document.getElementById('power-button').classList.remove('on');
       document.getElementById('power-button').classList.add('off');
       document.getElementById('power-button').textContent = '⏻ OFF';
       document.getElementById('wake-hint').style.display = 'none';
-      document.getElementById('wake-hint').classList.remove('active');
-      stopWakeWordDetection();
+      document.getElementById('wake-hint').classList.remove('active', 'listening');
+      stopWakeWord();
+      stopRecording();
       disconnectWebSocket();
       stopSpeaking();
       setStatus('off', 'DECONECTAT');
@@ -333,150 +326,78 @@
     // === WebSocket ===
     function connectWebSocket() {
       disconnectWebSocket();
-      // Convert HTTPS to WSS. Auth NU se pune pe subprotocol/query —
-      // se trimite in frame-ul "connect" dupa deschiderea WS (params.auth.token).
       const wsUrl = gatewayUrl.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
-      console.log('Connecting to:', wsUrl);
-
-      try {
-        ws = new WebSocket(wsUrl);
-      } catch (e) {
-        setStatus('off', 'DECONECTAT'); isOn = false; return;
-      }
+      dbg('WS connect: ' + wsUrl);
+      try { ws = new WebSocket(wsUrl); } catch (e) { setStatus('off', 'DECONECTAT'); isOn = false; return; }
 
       ws.onopen = async () => {
-        console.log('WebSocket connected — handshake connect...');
+        dbg('WS open — handshake...');
         setStatus('on', 'CONECTARE...');
         try {
-          // 1) Handshake: req method "connect" (auth la params.auth.token)
           const hello = await client.request('connect', connectParams());
-          if (!hello || hello.type !== 'hello-ok') {
-            throw new Error('hello-ok lipsa');
-          }
-          console.log('hello-ok, protocol', hello.protocol, 'connId', hello.server && hello.server.connId);
-          const scopes = (hello.auth && hello.auth.scopes) || [];
-          const mainSK = (hello.snapshot && hello.snapshot.sessionDefaults && hello.snapshot.sessionDefaults.mainSessionKey) || '?';
-          document.getElementById('voice-status').textContent = 'OK scopes:' + scopes.join(',') + ' | sk:' + SESSION_KEY;
+          if (!hello || hello.type !== 'hello-ok') throw new Error('hello-ok lipsa');
+          dbg('hello-ok protocol=' + hello.protocol);
           isConnected = true;
           setStatus('on', 'CONECTAT');
           document.getElementById('wake-hint').classList.add('active');
-          startWakeWordDetection();
+          startWakeWord();
 
-          // 2) Subscriere la mesajele sesiunii (sosesc ca event "chat")
-          // Protocol oficial: chat.history pentru istoric + sessions.messages.subscribe pentru evenimente live
           try {
             await client.request('chat.history', { sessionKey: SESSION_KEY });
             await client.request('sessions.messages.subscribe', { key: SESSION_KEY });
             subscribed = true;
-            console.log('subscribed to chat history + events for session', SESSION_KEY);
+            dbg('subscribed OK: ' + SESSION_KEY);
           } catch (e) {
-            console.log('history/subscribe failed:', e.message);
-            document.getElementById('voice-status').textContent = 'EROARE subscribe: ' + e.message;
+            dbg('subscribe err: ' + e.message);
           }
 
-          // 3) Flush texte trimise inainte de connect (si cadre audio fallback raw)
-          while (messageQueue.length > 0) {
-            const msg = messageQueue.shift();
-            ws.send(JSON.stringify(msg));
-          }
+          while (messageQueue.length > 0) { ws.send(JSON.stringify(messageQueue.shift())); }
         } catch (e) {
-          console.log('connect failed:', e.message);
+          dbg('connect err: ' + e.message);
           isConnected = false;
           setStatus('off', 'AUTENTIFICARE EȘUATĂ');
-          document.getElementById('voice-status').textContent = 'EROARE connect: ' + e.message;
         }
       };
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          handleWsMessage(data);
-        } catch (e) {
-          console.log('WS parse error:', e);
-        }
-      };
-
-      ws.onerror = (e) => {
-        console.log('WS error:', e);
-      };
-
+      ws.onmessage = (event) => { try { handleWsMessage(JSON.parse(event.data)); } catch (e) {} };
+      ws.onerror = () => { dbg('WS error'); };
       ws.onclose = () => {
-        console.log('WebSocket closed');
+        dbg('WS closed');
         isConnected = false;
-        if (isOn) {
-          setStatus('on', 'RECONECTARE...');
-          wsReconnectTimer = setTimeout(() => connectWebSocket(), 3000);
-        } else {
-          setStatus('off', 'DECONECTAT');
-        }
+        if (isOn) { setStatus('on', 'RECONECTARE...'); wsReconnectTimer = setTimeout(() => connectWebSocket(), 3000); }
+        else setStatus('off', 'DECONECTAT');
       };
     }
 
     function disconnectWebSocket() {
       if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
-      if (ws) {
-        ws.onclose = null; ws.onerror = null; ws.onmessage = null; ws.onopen = null;
-        try { ws.close(); } catch (e) {}
-        ws = null;
-      }
-      // Respinge req-uri inca pending (altfel ar atarna pana la timeout infinit).
+      if (ws) { ws.onclose = null; ws.onerror = null; ws.onmessage = null; ws.onopen = null; try { ws.close(); } catch(e){} ws = null; }
       subscribed = false;
-      if (client.pending.size) {
-        for (const p of client.pending.values()) p.reject(new Error('ws disconnected'));
-        client.pending.clear();
-      }
+      if (client.pending.size) { for (const p of client.pending.values()) p.reject(new Error('ws disconnected')); client.pending.clear(); }
     }
 
-    function sendWsMessage(msg) {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify(msg));
-      } else {
-        messageQueue.push(msg);
-      }
-    }
+    function sendWsMessage(msg) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg)); else messageQueue.push(msg); }
 
     function handleWsMessage(data) {
-      // OpenClaw Gateway protocol: frame-uri discriminate dupa "type".
-      if (!data || typeof data.type !== 'string') {
-        console.log('Non-protocol frame:', data);
-        return;
-      }
-
-      // Raspuns la un req: rezolva promise-ul pending dupa id.
+      if (!data || typeof data.type !== 'string') return;
       if (data.type === 'res') {
-        const p = client.pending.get(data.id);
-        if (!p) return;
-        client.pending.delete(data.id);
-        if (data.ok) p.resolve(data.payload);
-        else p.reject(new Error((data.error && data.error.message) || ('request failed: ' + (data.error && data.error.code || 'unknown'))));
+        const p = client.pending.get(data.id); if (!p) return; client.pending.delete(data.id);
+        if (data.ok) p.resolve(data.payload); else p.reject(new Error((data.error && data.error.message) || 'request failed'));
         return;
       }
-
-      // Event (notificare server). Mesajele abonate sosesc ca event "chat".
       if (data.type === 'event') {
-        if (data.event === 'connect.challenge') {
-          // Fara device identity — ignoram nonce-ul (conectam cu usedFallback).
-          return;
-        }
-        if (data.event === 'chat') {
-          handleChatEvent(data.payload);
-          return;
-        }
-        // Alte event-uri (tool, session, etc.) — nu afecteaza UI-ul de voce.
+        if (data.event === 'connect.challenge') return;
+        if (data.event === 'chat') { handleChatEvent(data.payload); return; }
         return;
       }
-
-      console.log('Unhandled frame type:', data);
     }
 
-    // Proceseaza un event "chat" (payload cu state: delta|final|aborted|error).
     function handleChatEvent(p) {
       if (!p) return;
-      if (p.sessionKey && p.sessionKey !== SESSION_KEY) return; // FILTRU: doar evenimente pentru sesiunea noastră
+      if (p.sessionKey && p.sessionKey !== SESSION_KEY) return;
       const state = p.state;
 
       if (state === 'delta') {
-        // deltaText: text incremental; replace:true inseamna refresh complet (nu append).
         if (p.replace) streamedText = p.deltaText || '';
         else streamedText += (p.deltaText || '');
         if (streamedText) {
@@ -487,23 +408,21 @@
       }
 
       if (state === 'final') {
-        // Mesajul final: folosim continutul canonic din p.message.content (array de {type:"text", text}).
         let text = streamedText;
         try {
           if (p.message && Array.isArray(p.message.content)) {
             const joined = p.message.content.map(b => (b && b.text) || '').join('');
             if (joined) text = joined;
-          } else if (p.message && typeof p.message.content === 'string') {
-            text = p.message.content;
-          }
+          } else if (p.message && typeof p.message.content === 'string') { text = p.message.content; }
         } catch (e) {}
         streamedText = '';
-        // Filtrează NO_REPLY (răspuns intern OpenClaw)
+
+        // Filtrează NO_REPLY
         let displayText = text;
         if (displayText && displayText.trim() === 'NO_REPLY') {
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          if (isOn) startWakeWordDetection();
+          if (isOn) startWakeWord();
           return;
         }
         if (displayText) displayText = displayText.replace(/\s*NO_REPLY\s*/g, '').trim();
@@ -516,59 +435,47 @@
         } else {
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          if (isOn) startWakeWordDetection();
+          if (isOn) startWakeWord();
         }
         return;
       }
 
       if (state === 'aborted' || state === 'error') {
-        streamedText = '';
-        isThinking = false;
-        console.log('chat', state, p.errorMessage || '');
+        streamedText = ''; isThinking = false;
+        dbg('chat ' + state + ': ' + (p.errorMessage || ''));
         if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-        if (isOn) startWakeWordDetection();
+        if (isOn) startWakeWord();
         return;
       }
     }
 
     function sendTextToGateway(text) {
       isThinking = true;
-      stopListening();
+      stopRecording();
       streamedText = '';
       setStatus('thinking', 'PROCESEZ...');
-
-      // Adaugă mesajul utilizatorului în istoric
       var pendingBubble = addChatBubble(text, 'user');
       pendingBubble.classList.add('pending');
 
-      // Timeout: după 10 secunde fără răspuns, marcăm ca pending
       var pendingTimeout = setTimeout(function() {
         if (isThinking) {
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          document.getElementById('voice-status').textContent = 'Mesaj în pending ⏳ - aștept răspuns gateway';
-          if (isOn) startWakeWordDetection();
+          if (isOn) startWakeWord();
         }
-      }, 10000);
+      }, 15000);
 
       client.request('chat.send', { sessionKey: SESSION_KEY, message: text, idempotencyKey: (crypto.randomUUID ? crypto.randomUUID() : 'k' + (++rpcCounter)) })
-        .then((ack) => {
-          clearTimeout(pendingTimeout);
-          console.log('chat.send ack:', ack && ack.status, ack && ack.runId);
-          pendingBubble.classList.remove('pending');
-          document.getElementById('voice-status').textContent = 'Trimis OK: ' + (ack && ack.status || 'ack');
-        })
+        .then((ack) => { clearTimeout(pendingTimeout); pendingBubble.classList.remove('pending'); dbg('ack: ' + (ack && ack.status)); })
         .catch((e) => {
-          clearTimeout(pendingTimeout);
-          isThinking = false;
+          clearTimeout(pendingTimeout); isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
           addChatBubble('⚠️ EROARE: ' + (e.message || 'eroare gateway'), 'lola');
-          document.getElementById('voice-status').textContent = 'EROARE: ' + (e.message || 'unknown');
-          if (isOn) startWakeWordDetection();
+          dbg('send err: ' + e.message);
+          if (isOn) startWakeWord();
         });
     }
 
-    // === Text Input ===
     function sendTextMessage() {
       const input = document.getElementById('text-input');
       const text = input.value.trim();
@@ -581,108 +488,232 @@
       if (ti) ti.addEventListener('keydown', function(e) { if (e.key === 'Enter') sendTextMessage(); });
     });
 
-    // === Wake Word ===
-    function startWakeWordDetection() {
-      if (wakeRecognition) return; // previne dublu-start
+    // ==========================================
+    // === WAKE WORD (varianta A — SpeechRecognition cu repornire agresivă) ===
+    // ==========================================
+    // Strategie: SpeechRecognition ascultă continuu cu continuous=true.
+    // Pe Android Chrome se oprește singur după ~30-60s sau la erori.
+    // Repornim automat la onend/onerror cu backoff scurt (200ms-1s).
+    // Când detectează wake word → oprim wake → pornim înregistrare MediaRecorder.
+
+    function startWakeWord() {
+      if (isWakeListening) return;
+      if (isListening || isThinking || isSpeaking) return;
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { console.log('SpeechRecognition not available'); return; }
-      wakeRecognition = new SR();
+      if (!SR) { dbg('SpeechRecognition nu există — fallback la tap'); return; }
+
+      try {
+        wakeRecognition = new SR();
+      } catch(e) { dbg('SR create err: ' + e.message); return; }
+
       wakeRecognition.continuous = true;
       wakeRecognition.interimResults = true;
       wakeRecognition.lang = 'ro-RO';
+      wakeRecognition.maxAlternatives = 3;
+
+      wakeRecognition.onstart = () => {
+        isWakeListening = true;
+        wakeRestartCount = 0;
+        dbg('WAKE pornit — ascult "Hey Lola"');
+        const orb = document.getElementById('voice-orb');
+        if (orb) orb.className = 'voice-orb on';
+        const hint = document.getElementById('wake-hint');
+        if (hint) { hint.classList.add('active'); hint.classList.remove('listening'); hint.textContent = 'Spune "Hey Lola"'; }
+      };
+
       wakeRecognition.onresult = (event) => {
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript.toLowerCase().trim();
-          if (transcript.includes(wakeWord) && !isListening && !isThinking && !isSpeaking) {
-            wakeRecognition.stop();
-            startListening();
+          let transcript = event.results[i][0].transcript.toLowerCase().trim();
+          // Variante: "hey lola", "hei lola", "hai lola", "he lola", "ei lola"
+          const variants = [wakeWord, 'hei lola', 'hai lola', 'he lola', 'ei lola', 'heila', 'hej lola'];
+          let matched = false;
+          for (const v of variants) {
+            if (transcript.includes(v)) { matched = true; break; }
+          }
+          if (matched && !isListening && !isThinking && !isSpeaking) {
+            dbg('WAKE WORD detectată: "' + transcript + '"');
+            stopWakeWord();
+            // Feedback: vibrează + bip
+            if (navigator.vibrate) navigator.vibrate(100);
+            startRecording();
             return;
           }
         }
       };
+
       wakeRecognition.onerror = (e) => {
-        if (e.error === 'no-speech' || e.error === 'aborted') return;
-        if (isOn && !isListening) {
-          setTimeout(() => { if (isOn && !isListening && !isThinking && !isSpeaking) { try { wakeRecognition.start(); } catch(e) {} } }, 1000);
+        dbg('WAKE err: ' + e.error);
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          dbg('Microfon blocat — necesită permisiune');
+          document.getElementById('voice-status').textContent = '⚠️ Microfon blocat — permite accesul';
+          return;
         }
+        // no-speech, audio-capture, network — repornim
+        if (e.error === 'no-speech' || e.error === 'aborted' || e.error === 'audio-capture') return; // onend va reporni
       };
+
       wakeRecognition.onend = () => {
+        isWakeListening = false;
+        dbg('WAKE ended (count=' + wakeRestartCount + ')');
         if (isOn && !isListening && !isThinking && !isSpeaking) {
-          setTimeout(() => { try { wakeRecognition.start(); } catch(e) {} }, 100);
+          // Repornire agresivă cu backoff
+          const delay = Math.min(200 * Math.pow(1.5, wakeRestartCount), 2000);
+          wakeRestartCount++;
+          if (wakeRestartTimer) clearTimeout(wakeRestartTimer);
+          wakeRestartTimer = setTimeout(() => {
+            if (isOn && !isListening && !isThinking && !isSpeaking && !isWakeListening) {
+              try { wakeRecognition.start(); } catch(e) { dbg('WAKE restart err: ' + e.message); }
+            }
+          }, delay);
         }
       };
-      try { wakeRecognition.start(); } catch(e) {}
+
+      try {
+        wakeRecognition.start();
+        dbg('WAKE start...');
+      } catch(e) {
+        dbg('WAKE start err: ' + e.message);
+        // Retry după 500ms
+        if (wakeRestartTimer) clearTimeout(wakeRestartTimer);
+        wakeRestartTimer = setTimeout(() => { if (isOn) startWakeWord(); }, 500);
+      }
     }
 
-    function stopWakeWordDetection() {
-      if (wakeRecognition) { try { wakeRecognition.stop(); } catch(e) {} wakeRecognition = null; }
+    function stopWakeWord() {
+      isWakeListening = false;
+      if (wakeRestartTimer) { clearTimeout(wakeRestartTimer); wakeRestartTimer = null; }
+      if (wakeRecognition) {
+        try { wakeRecognition.onend = null; wakeRecognition.onerror = null; wakeRecognition.onresult = null; wakeRecognition.stop(); } catch(e){}
+        wakeRecognition = null;
+      }
+      dbg('WAKE oprit');
     }
 
-    // === Listening ===
-    function startListening() {
+    // ==========================================
+    // === ÎNREGISTRARE + GROQ WHISPER (varianta B) ===
+    // ==========================================
+    // După wake word → MediaRecorder captează audio (max 15s).
+    // Audio → base64 → trimite prin Gateway ca atașament audio.
+    // Gateway folosește Groq Whisper pentru transcriere.
+    // Textul transcris → chat.send → Lola procesează → răspuns TTS.
+
+    async function startRecording() {
       isListening = true;
       setStatus('listening', 'ASCULT...');
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { startMediaRecording(); return; }
-      recognition = new SR();
-      recognition.lang = 'ro-RO'; recognition.continuous = false; recognition.interimResults = true;
-      let finalTranscript = '';
-      recognition.onresult = (event) => {
-        let interim = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const t = event.results[i][0].transcript;
-          if (event.results[i].isFinal) finalTranscript += t; else interim += t;
-        }
-        const transcriptEl = document.getElementById('transcript');
-        transcriptEl.textContent = finalTranscript + interim;
-        transcriptEl.classList.add('visible');
-      };
-      recognition.onerror = (e) => { stopListening(); if (isOn) startWakeWordDetection(); };
-      recognition.onend = () => {
-        if (finalTranscript.trim()) {
-          addChatBubble(finalTranscript.trim(), 'user');
-          sendTextToGateway(finalTranscript.trim());
-        } else { stopListening(); if (isOn) startWakeWordDetection(); }
-      };
-      try { recognition.start(); } catch(e) { stopListening(); if (isOn) startWakeWordDetection(); }
+      const hint = document.getElementById('wake-hint');
+      if (hint) { hint.classList.remove('active'); hint.classList.add('listening'); hint.textContent = '🔊 Vorbește...'; }
+      dbg('REC start — MediaRecorder');
+
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioChunks = [];
+
+        // Preferăm webm/opus, fallback la default
+        let mimeType = 'audio/webm;codecs=opus';
+        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/webm';
+        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = '';
+
+        mediaRecorder = new MediaRecorder(mediaStream, mimeType ? { mimeType } : {});
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+
+        mediaRecorder.onstop = async () => {
+          dbg('REC stop — procesare audio');
+          const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+          if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+
+          if (audioBlob.size < 500) {
+            dbg('Audio prea mic — ignor');
+            stopListening();
+            if (isOn) startWakeWord();
+            return;
+          }
+
+          // Arată transcript placeholder
+          const transcriptEl = document.getElementById('transcript');
+          transcriptEl.textContent = '🔄 Transcriu audio...';
+          transcriptEl.classList.add('visible');
+
+          // Trimite audio ca mesaj către Gateway (chat.send cu atașament audio)
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1];
+            const dataSizeKB = Math.round(base64.length * 0.75 / 1024);
+            dbg('Audio: ' + dataSizeKB + 'KB, trimitem prin WS');
+
+            // Trimite audio prin chat.send ca atașament
+            // OpenClaw Gateway suportă atașamente în mesaje
+            const msgId = crypto.randomUUID ? crypto.randomUUID() : 'k' + (++rpcCounter);
+            sendWsMessage({
+              type: 'req',
+              id: msgId,
+              method: 'chat.send',
+              params: {
+                sessionKey: SESSION_KEY,
+                message: '🎤 [audio]',
+                idempotencyKey: msgId,
+                attachments: [{
+                  type: 'audio',
+                  media: 'data:' + (mediaRecorder.mimeType || 'audio/webm') + ';base64,' + base64,
+                  mimeType: mediaRecorder.mimeType || 'audio/webm'
+                }]
+              }
+            });
+
+            // Așteptăm răspuns — vom primi event chat cu transcrierea + răspuns
+            isThinking = true;
+            setStatus('thinking', 'PROCESEZ...');
+            transcriptEl.textContent = '⏳ Aștept răspuns...';
+          };
+          reader.readAsDataURL(audioBlob);
+        };
+
+        // Auto-stop după 15s
+        recordingTimer = setTimeout(() => {
+          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            dbg('REC timeout 15s — auto stop');
+            mediaRecorder.stop();
+          }
+        }, 15000);
+
+        mediaRecorder.start();
+        dbg('REC pornit OK');
+
+        // Permite oprire manuală prin tap pe orb
+        const orb = document.getElementById('voice-orb');
+        orb.onclick = () => {
+          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            dbg('REC stop manual');
+            mediaRecorder.stop();
+          }
+        };
+      } catch(e) {
+        dbg('REC err: ' + e.message);
+        document.getElementById('voice-status').textContent = '⚠️ Microfon: ' + e.message;
+        stopListening();
+        if (isOn) startWakeWord();
+      }
     }
 
     function stopListening() {
       isListening = false;
-      if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+      if (recordingTimer) { clearTimeout(recordingTimer); recordingTimer = null; }
+      // Nu oprim mediaRecorder aici — onstop face cleanup
     }
 
-    // === Media Recording Fallback ===
-    async function startMediaRecording() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
-        let audioChunks = [];
-        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
-        mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-          stream.getTracks().forEach(t => t.stop());
-          if (audioBlob.size > 1000) {
-            // Send as base64 audio through WebSocket
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64 = reader.result.split(',')[1];
-              sendWsMessage({ type: 'audio', audio: base64, format: 'webm', session: 'pwa-voice' });
-              isThinking = true;
-              setStatus('thinking', 'PROCESEZ...');
-            };
-            reader.readAsDataURL(audioBlob);
-          } else { stopListening(); if (isOn) startWakeWordDetection(); }
-        };
-        setTimeout(() => { if (mediaRecorder.state !== 'inactive') mediaRecorder.stop(); }, 30000);
-        mediaRecorder.start();
-      } catch(e) { stopListening(); if (isOn) startWakeWordDetection(); }
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        try { mediaRecorder.stop(); } catch(e) {}
+      }
+      if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+      stopListening();
     }
 
     // === TTS ===
     function speakResponse(text) {
       isSpeaking = true; isThinking = false;
       setStatus('speaking', 'VORBESC...');
+      dbg('TTS: "' + text.substring(0, 50) + (text.length > 50 ? '...' : '') + '"');
+
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
@@ -690,11 +721,15 @@
         const voices = window.speechSynthesis.getVoices();
         const matchVoice = voices.find(v => v.lang === utterance.lang) || voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
         if (matchVoice) utterance.voice = matchVoice;
-        utterance.rate = 1.0; utterance.pitch = 1.0;
-        utterance.onend = () => { stopSpeaking(); if (isOn) startWakeWordDetection(); };
-        utterance.onerror = () => { stopSpeaking(); if (isOn) startWakeWordDetection(); };
+        utterance.rate = 1.05; utterance.pitch = 1.0;
+        utterance.onend = () => { dbg('TTS ended'); stopSpeaking(); if (isOn) startWakeWord(); };
+        utterance.onerror = (e) => { dbg('TTS err: ' + e.error); stopSpeaking(); if (isOn) startWakeWord(); };
         window.speechSynthesis.speak(utterance);
-      } else { stopSpeaking(); if (isOn) startWakeWordDetection(); }
+      } else {
+        dbg('speechSynthesis nu există');
+        stopSpeaking();
+        if (isOn) startWakeWord();
+      }
     }
 
     function stopSpeaking() {
@@ -705,13 +740,15 @@
 
     // === Service Worker ===
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error:', e));
+      navigator.serviceWorker.register('sw.js').catch(e => dbg('SW err: ' + e));
     }
 
     // === Init ===
     if (!gatewayUrl) toggleSettings();
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = () => console.log('Voices loaded:', window.speechSynthesis.getVoices().length);
+      window.speechSynthesis.onvoiceschanged = () => dbg('Voices: ' + window.speechSynthesis.getVoices().length);
+      // Unele browsere necesită un utterance gol pentru a încărca vocile
+      window.speechSynthesis.getVoices();
     }
   </script>
 </body>
