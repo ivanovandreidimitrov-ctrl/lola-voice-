@@ -226,7 +226,7 @@
     function connectParams() {
       return {
         minProtocol: 4, maxProtocol: 4,
-        client: { id: 'openclaw-control-ui', version: '3.1.0', platform: 'web', mode: 'webchat' },
+        client: { id: 'openclaw-control-ui', version: '5.0.0', platform: 'web', mode: 'webchat' },
         role: 'operator',
         scopes: ['operator.read', 'operator.write'],
         caps: ['tool-events'],
@@ -422,7 +422,7 @@
         if (displayText && displayText.trim() === 'NO_REPLY') {
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          if (isOn) startWakeWord();
+          if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
           return;
         }
         if (displayText) displayText = displayText.replace(/\s*NO_REPLY\s*/g, '').trim();
@@ -435,7 +435,7 @@
         } else {
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          if (isOn) startWakeWord();
+          if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
         }
         return;
       }
@@ -444,7 +444,7 @@
         streamedText = ''; isThinking = false;
         dbg('chat ' + state + ': ' + (p.errorMessage || ''));
         if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-        if (isOn) startWakeWord();
+        if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
         return;
       }
     }
@@ -461,7 +461,7 @@
         if (isThinking) {
           isThinking = false;
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          if (isOn) startWakeWord();
+          if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
         }
       }, 15000);
 
@@ -472,7 +472,7 @@
           if (isConnected && !isListening) setStatus('on', 'CONECTAT');
           addChatBubble('⚠️ EROARE: ' + (e.message || 'eroare gateway'), 'lola');
           dbg('send err: ' + e.message);
-          if (isOn) startWakeWord();
+          if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
         });
     }
 
@@ -556,8 +556,8 @@
         isWakeListening = false;
         dbg('WAKE ended (count=' + wakeRestartCount + ')');
         if (isOn && !isListening && !isThinking && !isSpeaking) {
-          // Repornire agresivă cu backoff
-          const delay = Math.min(200 * Math.pow(1.5, wakeRestartCount), 2000);
+          // Repornire rapidă — conversație continuă
+          const delay = Math.min(100 * Math.pow(1.3, wakeRestartCount), 1000);
           wakeRestartCount++;
           if (wakeRestartTimer) clearTimeout(wakeRestartTimer);
           wakeRestartTimer = setTimeout(() => {
@@ -624,7 +624,7 @@
           if (audioBlob.size < 500) {
             dbg('Audio prea mic — ignor');
             stopListening();
-            if (isOn) startWakeWord();
+            if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
             return;
           }
 
@@ -690,7 +690,7 @@
         dbg('REC err: ' + e.message);
         document.getElementById('voice-status').textContent = '⚠️ Microfon: ' + e.message;
         stopListening();
-        if (isOn) startWakeWord();
+        if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
       }
     }
 
@@ -709,11 +709,117 @@
     }
 
     // === TTS ===
+    // Edge TTS — voce Microsoft naturală prin WebSocket (gratis, fără API key)
+    // Fallback: speechSynthesis (browser nativ, mai robotic dar funcțional offline)
+    let edgeTtsAudio = null;
+    let edgeTtsWs = null;
+
     function speakResponse(text) {
       isSpeaking = true; isThinking = false;
       setStatus('speaking', 'VORBESC...');
       dbg('TTS: "' + text.substring(0, 50) + (text.length > 50 ? '...' : '') + '"');
+      speakEdgeTts(text);
+    }
 
+    async function speakEdgeTts(text) {
+      const voiceMap = {
+        'ro-RO': 'ro-RO-EmilNeural',
+        'it-IT': 'it-IT-DiegoNeural',
+        'auto': (navigator.language || 'ro-RO').startsWith('it') ? 'it-IT-DiegoNeural' : 'ro-RO-EmilNeural'
+      };
+      const voice = voiceMap[ttsVoice] || voiceMap['auto'];
+      const lang = voice.split('-').slice(0, 2).join('-');
+
+      try {
+        // Edge TTS WebSocket endpoint
+        const wsUrl = 'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+        edgeTtsWs = new WebSocket(wsUrl);
+
+        let audioChunks = [];
+        let audioFormat = null;
+
+        edgeTtsWs.binaryType = 'arraybuffer';
+
+        edgeTtsWs.onopen = () => {
+          dbg('Edge TTS conectat — voice=' + voice);
+          // Config message
+          const config = 'Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}';
+          edgeTtsWs.send(config);
+
+          // SSML message
+          const ssml = '<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"' + lang + '\"><voice name=\"' + voice + '\"><prosody rate=\"+5%\" pitch=\"+0%\">' + text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</prosody></voice></speak>';
+          const msg = 'X-RequestId:' + (crypto.randomUUID ? crypto.randomUUID() : 'r' + (++rpcCounter)) + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + new Date().toISOString() + 'Z\r\nPath:ssml\r\n\r\n' + ssml;
+          edgeTtsWs.send(msg);
+        };
+
+        edgeTtsWs.onmessage = (event) => {
+          if (event.data instanceof ArrayBuffer) {
+            // Binary audio data — primii 2 bytes sunt header-ul (0x00 0x67 = Path:audio)
+            if (event.data.byteLength > 2) {
+              const headerLen = 2;
+              const audioData = event.data.slice(headerLen);
+              if (audioData.byteLength > 0) audioChunks.push(audioData);
+            }
+          } else if (typeof event.data === 'string') {
+            // Text message — verificăm dacă e Path:turn.end
+            if (event.data.includes('Path:turn.end')) {
+              dbg('Edge TTS gata — ' + audioChunks.length + ' chunks');
+              edgeTtsWs.close();
+              if (audioChunks.length > 0) {
+                // Combină chunks într-un singur Blob și redă
+                const blob = new Blob(audioChunks, { type: 'audio/mp3' });
+                const url = URL.createObjectURL(blob);
+                edgeTtsAudio = new Audio(url);
+                edgeTtsAudio.onended = () => {
+                  dbg('Edge TTS redare completă');
+                  URL.revokeObjectURL(url);
+                  edgeTtsAudio = null;
+                  stopSpeaking();
+                  if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
+                };
+                edgeTtsAudio.onerror = (e) => {
+                  dbg('Edge TTS audio err');
+                  URL.revokeObjectURL(url);
+                  edgeTtsAudio = null;
+                  fallbackTts(text);
+                };
+                edgeTtsAudio.play().catch(() => { dbg('Edge TTS play blocked'); fallbackTts(text); });
+              } else {
+                dbg('Edge TTS fără audio — fallback');
+                fallbackTts(text);
+              }
+            } else if (event.data.includes('Path:turn.start')) {
+              dbg('Edge TTS streaming...');
+            }
+          }
+        };
+
+        edgeTtsWs.onerror = (e) => {
+          dbg('Edge TTS WS err');
+          fallbackTts(text);
+        };
+
+        edgeTtsWs.onclose = () => {
+          dbg('Edge TTS WS closed');
+        };
+
+        // Timeout 10s — dacă nu primim audio, fallback
+        setTimeout(() => {
+          if (isSpeaking && audioChunks.length === 0 && edgeTtsWs && edgeTtsWs.readyState === WebSocket.OPEN) {
+            dbg('Edge TTS timeout — fallback');
+            try { edgeTtsWs.close(); } catch(e){}
+            fallbackTts(text);
+          }
+        }, 10000);
+
+      } catch(e) {
+        dbg('Edge TTS excepție: ' + e.message);
+        fallbackTts(text);
+      }
+    }
+
+    function fallbackTts(text) {
+      dbg('TTS fallback — speechSynthesis');
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
@@ -722,18 +828,20 @@
         const matchVoice = voices.find(v => v.lang === utterance.lang) || voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
         if (matchVoice) utterance.voice = matchVoice;
         utterance.rate = 1.05; utterance.pitch = 1.0;
-        utterance.onend = () => { dbg('TTS ended'); stopSpeaking(); if (isOn) startWakeWord(); };
-        utterance.onerror = (e) => { dbg('TTS err: ' + e.error); stopSpeaking(); if (isOn) startWakeWord(); };
+        utterance.onend = () => { dbg('TTS fallback ended'); stopSpeaking(); if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); } };
+        utterance.onerror = (e) => { dbg('TTS fallback err: ' + e.error); stopSpeaking(); if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); } };
         window.speechSynthesis.speak(utterance);
       } else {
-        dbg('speechSynthesis nu există');
+        dbg('Niciun TTS disponibil');
         stopSpeaking();
-        if (isOn) startWakeWord();
+        if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
       }
     }
 
     function stopSpeaking() {
       isSpeaking = false;
+      if (edgeTtsAudio) { try { edgeTtsAudio.pause(); edgeTtsAudio = null; } catch(e){} }
+      if (edgeTtsWs) { try { edgeTtsWs.onmessage = null; edgeTtsWs.close(); } catch(e){} edgeTtsWs = null; }
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       if (isConnected && !isListening && !isThinking) setStatus('on', 'CONECTAT');
     }
