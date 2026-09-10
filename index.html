@@ -42,7 +42,7 @@
     @keyframes pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(76,175,80,0.4); } 50% { box-shadow: 0 0 0 8px rgba(76,175,80,0); } }
     @keyframes pulse-orange { 0%,100% { box-shadow: 0 0 0 0 rgba(255,107,53,0.4); } 50% { box-shadow: 0 0 0 12px rgba(255,107,53,0); } }
     @keyframes pulse-blue { 0%,100% { box-shadow: 0 0 0 0 rgba(33,150,243,0.4); } 50% { box-shadow: 0 0 0 8px rgba(33,150,243,0); } }
-    .voice-orb { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid; transition: all 0.3s; }
+    .voice-orb { border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid; transition: all 0.3s; cursor: pointer; }
     .voice-orb.idle { border-color: var(--text-dim); }
     .voice-orb.listening { border-color: var(--accent); background: rgba(255,107,53,0.1); box-shadow: 0 0 40px var(--accent-glow); animation: orb-pulse 1.5s infinite; }
     .voice-orb.thinking { border-color: var(--blue); background: rgba(33,150,243,0.1); box-shadow: 0 0 30px rgba(33,150,243,0.3); }
@@ -69,7 +69,7 @@
       display: flex; flex-direction: column; gap: 8px; min-height: 100px !important;
       background: rgba(255,255,255,0.02);
     }
-    .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; animation: slide-in 0.3s ease; }
+    .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; animation: slide-in 0.3s ease; word-wrap: break-word; }
     @keyframes slide-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .chat-bubble.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
     .chat-bubble.lola { align-self: flex-start; background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
@@ -106,6 +106,9 @@
     .wake-hint.active { color: var(--green); background: rgba(76,175,80,0.1); }
     .wake-hint.listening { color: var(--accent); background: rgba(255,107,53,0.1); }
     .debug-log { font-size: 10px; color: var(--text-dim); padding: 2px 12px; max-height: 40px; overflow-y: auto; flex: 0 0 auto; }
+    .mode-toggle { display: flex; gap: 4px; padding: 4px 12px; flex: 0 0 auto; }
+    .mode-btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 11px; cursor: pointer; background: transparent; color: var(--text-dim); }
+    .mode-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -113,7 +116,7 @@
 </head>
 <body>
   <div class="header">
-    <div class="header-title">🧭 Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v5.0</span></div>
+    <div class="header-title">🧭 Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v6.0</span></div>
     <div class="status-badge status-off" id="status-badge">
       <span class="status-dot"></span>
       <span id="status-text">DECONECTAT</span>
@@ -126,6 +129,12 @@
     <div class="voice-orb idle" id="voice-orb" style="width:32px; height:32px; font-size:16px; border-width:2px; flex-shrink:0;">🧭</div>
     <div class="voice-status-text" id="voice-status" style="flex:1; text-align:left; font-size:11px;">Apasă ON</div>
     <div class="wake-hint" id="wake-hint" style="display:none; flex:0 0 auto; max-width:none; padding:2px 8px; font-size:10px;">Spune "Hey Lola"</div>
+  </div>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="mode-wake" onclick="setMode('wake')">Wake Word</button>
+    <button class="mode-btn" id="mode-continuous" onclick="setMode('continuous')">Conversație</button>
+    <button class="mode-btn" id="mode-push" onclick="setMode('push')">Push-to-Talk</button>
   </div>
 
   <div class="voice-transcript" id="transcript" style="padding:4px 12px; max-height:40px;"></div>
@@ -147,12 +156,8 @@
     <div class="settings-card">
       <h2>⚙️ Setări</h2>
       <div class="settings-field">
-        <label for="gateway-url">Gateway URL (HTTPS Tailscale)</label>
-        <input type="url" id="gateway-url" placeholder="https://desktop-iohktkv.tail18ed74.ts.net">
-      </div>
-      <div class="settings-field">
-        <label for="gateway-token">Gateway Token</label>
-        <input type="password" id="gateway-token" placeholder="Token autentificare">
+        <label for="server-url">Server URL (Tailscale)</label>
+        <input type="url" id="server-url" placeholder="http://100.77.8.15:18790">
       </div>
       <div class="settings-field">
         <label for="wake-word">Wake Word</label>
@@ -166,6 +171,17 @@
           <option value="it-IT">Italiană</option>
         </select>
       </div>
+      <div class="settings-field">
+        <label for="tts-engine">Motor TTS</label>
+        <select id="tts-engine">
+          <option value="edge">Edge TTS (natural, online)</option>
+          <option value="browser">Browser (speechSynthesis, offline)</option>
+        </select>
+      </div>
+      <div class="settings-field">
+        <label for="silence-delay">Tăcere = sfârșit (sec)</label>
+        <input type="number" id="silence-delay" value="2" min="1" max="5" step="0.5">
+      </div>
       <div class="settings-buttons">
         <button class="btn btn-secondary" onclick="toggleSettings()">Anulează</button>
         <button class="btn btn-primary" onclick="saveSettings()">Salvează</button>
@@ -174,67 +190,42 @@
   </div>
 
   <script>
-    // === Config ===
-    const GATEWAY_KEY = 'lola_gateway_url';
-    const TOKEN_KEY = 'lola_gateway_token';
+    // === v6.0 Config — Direct Ollama Server (no Gateway WebSocket) ===
+    const SERVER_KEY = 'lola_server_url';
     const WAKE_KEY = 'lola_wake_word';
     const TTS_KEY = 'lola_tts_voice';
+    const TTS_ENGINE_KEY = 'lola_tts_engine';
+    const SILENCE_KEY = 'lola_silence_delay';
+    const MODE_KEY = 'lola_mode';
 
-    let gatewayUrl = localStorage.getItem(GATEWAY_KEY) || '';
-    let gatewayToken = localStorage.getItem(TOKEN_KEY) || '';
+    let serverUrl = localStorage.getItem(SERVER_KEY) || 'http://100.77.8.15:18790';
     let wakeWord = localStorage.getItem(WAKE_KEY) || 'hey lola';
     let ttsVoice = localStorage.getItem(TTS_KEY) || 'auto';
+    let ttsEngine = localStorage.getItem(TTS_ENGINE_KEY) || 'edge';
+    let silenceDelay = parseFloat(localStorage.getItem(SILENCE_KEY) || '2');
+    let chatMode = localStorage.getItem(MODE_KEY) || 'wake'; // wake | continuous | push
 
-    document.getElementById('gateway-url').value = gatewayUrl;
-    document.getElementById('gateway-token').value = gatewayToken;
+    document.getElementById('server-url').value = serverUrl;
     document.getElementById('wake-word').value = wakeWord;
     document.getElementById('tts-voice').value = ttsVoice;
+    document.getElementById('tts-engine').value = ttsEngine;
+    document.getElementById('silence-delay').value = silenceDelay;
+    updateModeButtons();
 
     // === State ===
     let isOn = false, isConnected = false, isListening = false, isThinking = false, isSpeaking = false;
     let isWakeListening = false;
     let wakeRecognition = null;
-    let ws = null, wsReconnectTimer = null, messageQueue = [];
     let wakeRestartTimer = null;
     let wakeRestartCount = 0;
     let mediaRecorder = null;
     let audioChunks = [];
     let mediaStream = null;
     let recordingTimer = null;
-
-    // === OpenClaw Gateway protocol ===
-    const SESSION_KEY = localStorage.getItem('lola_session_key') || 'agent:main:telegram:direct:8135678824';
-    let streamedText = '';
-    let subscribed = false;
-    let rpcCounter = 0;
-
-    const client = {
-      pending: new Map(),
-      request(method, params) {
-        const id = (crypto.randomUUID ? crypto.randomUUID() : 'r' + (++rpcCounter));
-        return new Promise((resolve, reject) => {
-          client.pending.set(id, { resolve, reject });
-          sendFrame({ type: 'req', id, method, params });
-        });
-      }
-    };
-
-    function sendFrame(obj) {
-      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
-    }
-
-    function connectParams() {
-      return {
-        minProtocol: 4, maxProtocol: 4,
-        client: { id: 'openclaw-control-ui', version: '5.0.0', platform: 'web', mode: 'webchat' },
-        role: 'operator',
-        scopes: ['operator.read', 'operator.write'],
-        caps: ['tool-events'],
-        auth: gatewayToken ? { token: gatewayToken } : undefined,
-        locale: navigator.language || 'ro-RO',
-        userAgent: navigator.userAgent
-      };
-    }
+    let continuousRecognition = null;
+    let silenceTimer = null;
+    let lastSpeechTime = 0;
+    let isPushing = false;
 
     // === Debug log ===
     function dbg(msg) {
@@ -261,17 +252,33 @@
     function toggleSettings() { document.getElementById('settings-panel').classList.toggle('visible'); }
 
     function saveSettings() {
-      gatewayUrl = document.getElementById('gateway-url').value.trim().replace(/\/$/, '');
-      gatewayToken = document.getElementById('gateway-token').value.trim();
+      serverUrl = document.getElementById('server-url').value.trim().replace(/\/$/, '');
       wakeWord = document.getElementById('wake-word').value.trim().toLowerCase();
       ttsVoice = document.getElementById('tts-voice').value;
-      localStorage.setItem(GATEWAY_KEY, gatewayUrl);
-      localStorage.setItem(TOKEN_KEY, gatewayToken);
+      ttsEngine = document.getElementById('tts-engine').value;
+      silenceDelay = parseFloat(document.getElementById('silence-delay').value) || 2;
+      localStorage.setItem(SERVER_KEY, serverUrl);
       localStorage.setItem(WAKE_KEY, wakeWord);
       localStorage.setItem(TTS_KEY, ttsVoice);
+      localStorage.setItem(TTS_ENGINE_KEY, ttsEngine);
+      localStorage.setItem(SILENCE_KEY, silenceDelay);
       toggleSettings();
-      document.getElementById('voice-status').textContent = 'Salvat: URL=' + (gatewayUrl ? 'OK' : 'GOL') + ' Token=' + (gatewayToken ? 'OK' : 'GOL');
+      document.getElementById('voice-status').textContent = 'Salvat: Server=' + (serverUrl ? 'OK' : 'GOL');
       if (isOn) { powerOff(); setTimeout(() => powerOn(), 500); }
+    }
+
+    function setMode(mode) {
+      chatMode = mode;
+      localStorage.setItem(MODE_KEY, mode);
+      updateModeButtons();
+      if (isOn) { powerOff(); setTimeout(() => powerOn(), 500); }
+    }
+
+    function updateModeButtons() {
+      ['wake', 'continuous', 'push'].forEach(m => {
+        const btn = document.getElementById('mode-' + m);
+        if (btn) btn.classList.toggle('active', chatMode === m);
+      });
     }
 
     function addChatBubble(text, sender) {
@@ -279,21 +286,26 @@
       const bubble = document.createElement('div');
       bubble.className = 'chat-bubble ' + (sender === 'user' ? 'user' : 'lola');
       const time = new Date().toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
-      bubble.innerHTML = text + '<div class="timestamp">' + time + '</div>';
+      bubble.innerHTML = escapeHtml(text) + '<div class="timestamp">' + time + '</div>';
       log.appendChild(bubble);
       log.scrollTop = log.scrollHeight;
       while (log.children.length > 50) log.removeChild(log.firstChild);
       return bubble;
     }
 
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     // === Power ===
     async function togglePower() { if (isOn) powerOff(); else await powerOn(); }
 
     async function powerOn() {
-      gatewayUrl = localStorage.getItem(GATEWAY_KEY) || gatewayUrl || '';
-      gatewayToken = localStorage.getItem(TOKEN_KEY) || gatewayToken || '';
-      if (!gatewayUrl) {
-        document.getElementById('voice-status').textContent = 'EROARE: Gateway URL lipsește! Pune-l în setări ⚙️';
+      serverUrl = localStorage.getItem(SERVER_KEY) || serverUrl;
+      if (!serverUrl) {
+        document.getElementById('voice-status').textContent = 'EROARE: Server URL lipsește!';
         toggleSettings();
         return;
       }
@@ -303,177 +315,102 @@
       document.getElementById('power-button').textContent = '⏻ ON';
       document.getElementById('wake-hint').style.display = 'block';
       setStatus('on', 'CONECTARE...');
-      connectWebSocket();
+
+      // Health check
+      try {
+        const resp = await fetch(serverUrl + '/health', { signal: AbortSignal.timeout(5000) });
+        const data = await resp.json();
+        if (data.status === 'ok') {
+          isConnected = true;
+          setStatus('on', 'CONECTAT');
+          dbg('Server OK: model=' + data.model);
+          startListening();
+        } else {
+          throw new Error('Health check failed');
+        }
+      } catch (e) {
+        isConnected = false;
+        setStatus('off', 'SERVER INACCESIBIL');
+        dbg('Server err: ' + e.message);
+        // Retry în 3s
+        setTimeout(() => { if (isOn) powerOn(); }, 3000);
+      }
     }
 
     function powerOff() {
       isOn = false; isConnected = false; isListening = false; isThinking = false; isSpeaking = false;
-      isWakeListening = false; subscribed = false; streamedText = '';
+      isWakeListening = false; isPushing = false;
       document.getElementById('power-button').classList.remove('on');
       document.getElementById('power-button').classList.add('off');
       document.getElementById('power-button').textContent = '⏻ OFF';
       document.getElementById('wake-hint').style.display = 'none';
       document.getElementById('wake-hint').classList.remove('active', 'listening');
       stopWakeWord();
+      stopContinuous();
       stopRecording();
-      disconnectWebSocket();
       stopSpeaking();
       setStatus('off', 'DECONECTAT');
       document.getElementById('transcript').classList.remove('visible');
       document.getElementById('response').classList.remove('visible');
     }
 
-    // === WebSocket ===
-    function connectWebSocket() {
-      disconnectWebSocket();
-      const wsUrl = gatewayUrl.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
-      dbg('WS connect: ' + wsUrl);
-      try { ws = new WebSocket(wsUrl); } catch (e) { setStatus('off', 'DECONECTAT'); isOn = false; return; }
-
-      ws.onopen = async () => {
-        dbg('WS open — handshake...');
-        setStatus('on', 'CONECTARE...');
-        try {
-          const hello = await client.request('connect', connectParams());
-          if (!hello || hello.type !== 'hello-ok') throw new Error('hello-ok lipsa');
-          dbg('hello-ok protocol=' + hello.protocol);
-          isConnected = true;
-          setStatus('on', 'CONECTAT');
-          document.getElementById('wake-hint').classList.add('active');
-          startWakeWord();
-
-          try {
-            await client.request('chat.history', { sessionKey: SESSION_KEY });
-            await client.request('sessions.messages.subscribe', { key: SESSION_KEY });
-            subscribed = true;
-            dbg('subscribed OK: ' + SESSION_KEY);
-          } catch (e) {
-            dbg('subscribe err: ' + e.message);
-          }
-
-          while (messageQueue.length > 0) { ws.send(JSON.stringify(messageQueue.shift())); }
-        } catch (e) {
-          dbg('connect err: ' + e.message);
-          isConnected = false;
-          setStatus('off', 'AUTENTIFICARE EȘUATĂ');
-        }
-      };
-
-      ws.onmessage = (event) => { try { handleWsMessage(JSON.parse(event.data)); } catch (e) {} };
-      ws.onerror = () => { dbg('WS error'); };
-      ws.onclose = () => {
-        dbg('WS closed');
-        isConnected = false;
-        if (isOn) { setStatus('on', 'RECONECTARE...'); wsReconnectTimer = setTimeout(() => connectWebSocket(), 3000); }
-        else setStatus('off', 'DECONECTAT');
-      };
+    function startListening() {
+      if (chatMode === 'wake') startWakeWord();
+      else if (chatMode === 'continuous') startContinuous();
+      // push mode — ascultă doar la apăsare
     }
 
-    function disconnectWebSocket() {
-      if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
-      if (ws) { ws.onclose = null; ws.onerror = null; ws.onmessage = null; ws.onopen = null; try { ws.close(); } catch(e){} ws = null; }
-      subscribed = false;
-      if (client.pending.size) { for (const p of client.pending.values()) p.reject(new Error('ws disconnected')); client.pending.clear(); }
-    }
+    // ==========================================
+    // === CHAT — Direct Ollama Server (HTTP) ===
+    // ==========================================
+    async function sendToServer(text) {
+      isThinking = true;
+      stopListening();
+      setStatus('thinking', 'PROCESEZ...');
+      streamedText = '';
 
-    function sendWsMessage(msg) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg)); else messageQueue.push(msg); }
+      const transcriptEl = document.getElementById('transcript');
+      transcriptEl.textContent = '🎤 ' + text;
+      transcriptEl.classList.add('visible');
 
-    function handleWsMessage(data) {
-      if (!data || typeof data.type !== 'string') return;
-      if (data.type === 'res') {
-        const p = client.pending.get(data.id); if (!p) return; client.pending.delete(data.id);
-        if (data.ok) p.resolve(data.payload); else p.reject(new Error((data.error && data.error.message) || 'request failed'));
-        return;
-      }
-      if (data.type === 'event') {
-        if (data.event === 'connect.challenge') return;
-        if (data.event === 'chat') { handleChatEvent(data.payload); return; }
-        return;
-      }
-    }
+      const bubble = addChatBubble(text, 'user');
+      bubble.classList.add('pending');
 
-    function handleChatEvent(p) {
-      if (!p) return;
-      if (p.sessionKey && p.sessionKey !== SESSION_KEY) return;
-      const state = p.state;
+      try {
+        dbg('Trimitem: ' + text.substring(0, 60));
+        const resp = await fetch(serverUrl + '/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+          signal: AbortSignal.timeout(60000)
+        });
 
-      if (state === 'delta') {
-        if (p.replace) streamedText = p.deltaText || '';
-        else streamedText += (p.deltaText || '');
-        if (streamedText) {
-          document.getElementById('response-text').textContent = streamedText;
-          document.getElementById('response').classList.add('visible');
-        }
-        return;
-      }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        bubble.classList.remove('pending');
 
-      if (state === 'final') {
-        let text = streamedText;
-        try {
-          if (p.message && Array.isArray(p.message.content)) {
-            const joined = p.message.content.map(b => (b && b.text) || '').join('');
-            if (joined) text = joined;
-          } else if (p.message && typeof p.message.content === 'string') { text = p.message.content; }
-        } catch (e) {}
-        streamedText = '';
+        let reply = data.reply || '';
+        dbg('Răspuns: ' + reply.substring(0, 60));
 
-        // Filtrează NO_REPLY
-        let displayText = text;
-        if (displayText && displayText.trim() === 'NO_REPLY') {
-          isThinking = false;
-          if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
-          return;
-        }
-        if (displayText) displayText = displayText.replace(/\s*NO_REPLY\s*/g, '').trim();
-        if (displayText) {
-          addChatBubble(displayText, 'lola');
-          document.getElementById('response-text').textContent = displayText;
+        if (reply && reply.trim() !== 'NO_REPLY') {
+          addChatBubble(reply, 'lola');
+          document.getElementById('response-text').textContent = reply;
           document.getElementById('response').classList.add('visible');
           isThinking = false;
-          speakResponse(displayText);
+          speakResponse(reply);
         } else {
           isThinking = false;
-          if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
+          if (isConnected) setStatus('on', 'CONECTAT');
+          restartListening();
         }
-        return;
+      } catch (e) {
+        bubble.classList.remove('pending');
+        isThinking = false;
+        dbg('Chat err: ' + e.message);
+        addChatBubble('⚠️ Eroare: ' + e.message, 'lola');
+        if (isConnected) setStatus('on', 'CONECTAT');
+        restartListening();
       }
-
-      if (state === 'aborted' || state === 'error') {
-        streamedText = ''; isThinking = false;
-        dbg('chat ' + state + ': ' + (p.errorMessage || ''));
-        if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-        if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
-        return;
-      }
-    }
-
-    function sendTextToGateway(text) {
-      isThinking = true;
-      stopRecording();
-      streamedText = '';
-      setStatus('thinking', 'PROCESEZ...');
-      var pendingBubble = addChatBubble(text, 'user');
-      pendingBubble.classList.add('pending');
-
-      var pendingTimeout = setTimeout(function() {
-        if (isThinking) {
-          isThinking = false;
-          if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
-        }
-      }, 15000);
-
-      client.request('chat.send', { sessionKey: SESSION_KEY, message: text, idempotencyKey: (crypto.randomUUID ? crypto.randomUUID() : 'k' + (++rpcCounter)) })
-        .then((ack) => { clearTimeout(pendingTimeout); pendingBubble.classList.remove('pending'); dbg('ack: ' + (ack && ack.status)); })
-        .catch((e) => {
-          clearTimeout(pendingTimeout); isThinking = false;
-          if (isConnected && !isListening) setStatus('on', 'CONECTAT');
-          addChatBubble('⚠️ EROARE: ' + (e.message || 'eroare gateway'), 'lola');
-          dbg('send err: ' + e.message);
-          if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
-        });
     }
 
     function sendTextMessage() {
@@ -481,30 +418,36 @@
       const text = input.value.trim();
       if (!text || !isConnected) return;
       input.value = '';
-      sendTextToGateway(text);
+      sendToServer(text);
     }
     document.addEventListener('DOMContentLoaded', function() {
       const ti = document.getElementById('text-input');
       if (ti) ti.addEventListener('keydown', function(e) { if (e.key === 'Enter') sendTextMessage(); });
     });
 
-    // ==========================================
-    // === WAKE WORD (varianta A — SpeechRecognition cu repornire agresivă) ===
-    // ==========================================
-    // Strategie: SpeechRecognition ascultă continuu cu continuous=true.
-    // Pe Android Chrome se oprește singur după ~30-60s sau la erori.
-    // Repornim automat la onend/onerror cu backoff scurt (200ms-1s).
-    // Când detectează wake word → oprim wake → pornim înregistrare MediaRecorder.
+    function stopListening() {
+      stopWakeWord();
+      stopContinuous();
+      stopRecording();
+    }
 
+    function restartListening() {
+      if (isOn && isConnected) {
+        if (chatMode === 'wake') { wakeRestartCount = 0; setTimeout(startWakeWord, 300); }
+        else if (chatMode === 'continuous') { setTimeout(startContinuous, 300); }
+      }
+    }
+
+    // ==========================================
+    // === MODE 1: WAKE WORD (SpeechRecognition) ===
+    // ==========================================
     function startWakeWord() {
-      if (isWakeListening) return;
-      if (isListening || isThinking || isSpeaking) return;
+      if (isWakeListening || isListening || isThinking || isSpeaking) return;
+      if (chatMode !== 'wake') return;
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { dbg('SpeechRecognition nu există — fallback la tap'); return; }
+      if (!SR) { dbg('SpeechRecognition nu există'); return; }
 
-      try {
-        wakeRecognition = new SR();
-      } catch(e) { dbg('SR create err: ' + e.message); return; }
+      try { wakeRecognition = new SR(); } catch(e) { dbg('SR create err: ' + e.message); return; }
 
       wakeRecognition.continuous = true;
       wakeRecognition.interimResults = true;
@@ -512,28 +455,23 @@
       wakeRecognition.maxAlternatives = 3;
 
       wakeRecognition.onstart = () => {
-        isWakeListening = true;
-        wakeRestartCount = 0;
+        isWakeListening = true; wakeRestartCount = 0;
         dbg('WAKE pornit — ascult "Hey Lola"');
-        const orb = document.getElementById('voice-orb');
-        if (orb) orb.className = 'voice-orb on';
+        document.getElementById('voice-orb').className = 'voice-orb on';
         const hint = document.getElementById('wake-hint');
-        if (hint) { hint.classList.add('active'); hint.classList.remove('listening'); hint.textContent = 'Spune "Hey Lola"'; }
+        hint.classList.add('active'); hint.classList.remove('listening');
+        hint.textContent = 'Spune "Hey Lola"';
       };
 
       wakeRecognition.onresult = (event) => {
         for (let i = event.resultIndex; i < event.results.length; i++) {
           let transcript = event.results[i][0].transcript.toLowerCase().trim();
-          // Variante: "hey lola", "hei lola", "hai lola", "he lola", "ei lola"
           const variants = [wakeWord, 'hei lola', 'hai lola', 'he lola', 'ei lola', 'heila', 'hej lola'];
           let matched = false;
-          for (const v of variants) {
-            if (transcript.includes(v)) { matched = true; break; }
-          }
+          for (const v of variants) { if (transcript.includes(v)) { matched = true; break; } }
           if (matched && !isListening && !isThinking && !isSpeaking) {
-            dbg('WAKE WORD detectată: "' + transcript + '"');
+            dbg('WAKE detectată: "' + transcript + '"');
             stopWakeWord();
-            // Feedback: vibrează + bip
             if (navigator.vibrate) navigator.vibrate(100);
             startRecording();
             return;
@@ -543,37 +481,30 @@
 
       wakeRecognition.onerror = (e) => {
         dbg('WAKE err: ' + e.error);
-        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-          dbg('Microfon blocat — necesită permisiune');
-          document.getElementById('voice-status').textContent = '⚠️ Microfon blocat — permite accesul';
+        if (e.error === 'not-allowed') {
+          document.getElementById('voice-status').textContent = '⚠️ Microfon blocat';
           return;
         }
-        // no-speech, audio-capture, network — repornim
-        if (e.error === 'no-speech' || e.error === 'aborted' || e.error === 'audio-capture') return; // onend va reporni
       };
 
       wakeRecognition.onend = () => {
         isWakeListening = false;
         dbg('WAKE ended (count=' + wakeRestartCount + ')');
-        if (isOn && !isListening && !isThinking && !isSpeaking) {
-          // Repornire rapidă — conversație continuă
+        if (isOn && !isListening && !isThinking && !isSpeaking && chatMode === 'wake') {
           const delay = Math.min(100 * Math.pow(1.3, wakeRestartCount), 1000);
           wakeRestartCount++;
           if (wakeRestartTimer) clearTimeout(wakeRestartTimer);
           wakeRestartTimer = setTimeout(() => {
-            if (isOn && !isListening && !isThinking && !isSpeaking && !isWakeListening) {
+            if (isOn && !isListening && !isThinking && !isSpeaking && !isWakeListening && chatMode === 'wake') {
               try { wakeRecognition.start(); } catch(e) { dbg('WAKE restart err: ' + e.message); }
             }
           }, delay);
         }
       };
 
-      try {
-        wakeRecognition.start();
-        dbg('WAKE start...');
-      } catch(e) {
+      try { wakeRecognition.start(); dbg('WAKE start...'); }
+      catch(e) {
         dbg('WAKE start err: ' + e.message);
-        // Retry după 500ms
         if (wakeRestartTimer) clearTimeout(wakeRestartTimer);
         wakeRestartTimer = setTimeout(() => { if (isOn) startWakeWord(); }, 500);
       }
@@ -586,29 +517,139 @@
         try { wakeRecognition.onend = null; wakeRecognition.onerror = null; wakeRecognition.onresult = null; wakeRecognition.stop(); } catch(e){}
         wakeRecognition = null;
       }
-      dbg('WAKE oprit');
     }
 
     // ==========================================
-    // === ÎNREGISTRARE + GROQ WHISPER (varianta B) ===
+    // === MODE 2: CONTINUOUS CONVERSATION ===
     // ==========================================
-    // După wake word → MediaRecorder captează audio (max 15s).
-    // Audio → base64 → trimite prin Gateway ca atașament audio.
-    // Gateway folosește Groq Whisper pentru transcriere.
-    // Textul transcris → chat.send → Lola procesează → răspuns TTS.
+    // SpeechRecognition cu continuous=true, interimResults=true
+    // Detectează tăcerea (silenceDelay sec) → trimite textul la server
+    // După răspuns TTS → repornește ascultarea automat
+
+    function startContinuous() {
+      if (isListening || isThinking || isSpeaking) return;
+      if (chatMode !== 'continuous') return;
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { dbg('SpeechRecognition nu există'); return; }
+
+      try { continuousRecognition = new SR(); } catch(e) { return; }
+
+      continuousRecognition.continuous = true;
+      continuousRecognition.interimResults = true;
+      continuousRecognition.lang = 'ro-RO';
+      continuousRecognition.maxAlternatives = 1;
+
+      let finalTranscript = '';
+
+      continuousRecognition.onstart = () => {
+        isListening = true;
+        finalTranscript = '';
+        setStatus('listening', 'ASCULT...');
+        dbg('CONTINUOUS pornit');
+        const hint = document.getElementById('wake-hint');
+        if (hint) { hint.classList.add('listening'); hint.textContent = '🔊 Vorbește...'; }
+      };
+
+      continuousRecognition.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+            lastSpeechTime = Date.now();
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        const display = finalTranscript + interim;
+        const transcriptEl = document.getElementById('transcript');
+        transcriptEl.textContent = '🎤 ' + display;
+        transcriptEl.classList.add('visible');
+
+        // Detect silence — dacă avem text și tăcere > silenceDelay sec → trimite
+        if (finalTranscript.trim() || interim.trim()) {
+          lastSpeechTime = Date.now();
+          if (silenceTimer) clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(() => {
+            const text = (finalTranscript + ' ' + interim).trim();
+            if (text && isListening && !isThinking && !isSpeaking) {
+              dbg('Silence detected — sending: ' + text.substring(0, 60));
+              stopContinuous();
+              sendToServer(text);
+            }
+          }, silenceDelay * 1000);
+        }
+      };
+
+      continuousRecognition.onerror = (e) => {
+        dbg('CONTINUOUS err: ' + e.error);
+        if (e.error === 'not-allowed') {
+          document.getElementById('voice-status').textContent = '⚠️ Microfon blocat';
+          return;
+        }
+      };
+
+      continuousRecognition.onend = () => {
+        isListening = false;
+        dbg('CONTINUOUS ended');
+        // Dacă avem text netrimis, trimite-l
+        if (finalTranscript.trim() && !isThinking && !isSpeaking) {
+          stopContinuous();
+          sendToServer(finalTranscript.trim());
+        } else if (isOn && isConnected && !isThinking && !isSpeaking && chatMode === 'continuous') {
+          // Repornire automată
+          setTimeout(() => { if (isOn && !isThinking && !isSpeaking && chatMode === 'continuous') startContinuous(); }, 300);
+        }
+      };
+
+      try { continuousRecognition.start(); }
+      catch(e) { dbg('CONTINUOUS start err: ' + e.message); }
+    }
+
+    function stopContinuous() {
+      if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+      if (continuousRecognition) {
+        try { continuousRecognition.onend = null; continuousRecognition.onerror = null; continuousRecognition.onresult = null; continuousRecognition.stop(); } catch(e){}
+        continuousRecognition = null;
+      }
+      isListening = false;
+    }
+
+    // ==========================================
+    // === MODE 3: PUSH-TO-TALK (tap and hold) ===
+    // ==========================================
+    // Apasă și ține orb-ul → înregistrează. Release → trimite.
+
+    function startPushToTalk() {
+      if (isListening || isThinking || isSpeaking) return;
+      isPushing = true;
+      startRecording();
+    }
+
+    function stopPushToTalk() {
+      if (!isPushing) return;
+      isPushing = false;
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+    }
+
+    // ==========================================
+    // === RECORDING (MediaRecorder + Groq Whisper via server) ===
+    // ==========================================
+    // Pentru wake mode: după wake word → înregistrează → trimite audio la server
+    // Server face Whisper transcriere + Ollama response în unul singur
 
     async function startRecording() {
       isListening = true;
       setStatus('listening', 'ASCULT...');
       const hint = document.getElementById('wake-hint');
       if (hint) { hint.classList.remove('active'); hint.classList.add('listening'); hint.textContent = '🔊 Vorbește...'; }
-      dbg('REC start — MediaRecorder');
+      dbg('REC start');
 
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioChunks = [];
 
-        // Preferăm webm/opus, fallback la default
         let mimeType = 'audio/webm;codecs=opus';
         if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/webm';
         if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = '';
@@ -617,60 +658,83 @@
         mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
 
         mediaRecorder.onstop = async () => {
-          dbg('REC stop — procesare audio');
+          dbg('REC stop');
           const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
           if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
 
           if (audioBlob.size < 500) {
             dbg('Audio prea mic — ignor');
-            stopListening();
-            if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
+            isListening = false;
+            restartListening();
             return;
           }
 
-          // Arată transcript placeholder
+          // Trimite audio la server pentru Whisper + Ollama
           const transcriptEl = document.getElementById('transcript');
-          transcriptEl.textContent = '🔄 Transcriu audio...';
+          transcriptEl.textContent = '🔄 Transcriu + procesez...';
           transcriptEl.classList.add('visible');
 
-          // Trimite audio ca mesaj către Gateway (chat.send cu atașament audio)
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const base64 = reader.result.split(',')[1];
-            const dataSizeKB = Math.round(base64.length * 0.75 / 1024);
-            dbg('Audio: ' + dataSizeKB + 'KB, trimitem prin WS');
+          isThinking = true;
+          isListening = false;
+          setStatus('thinking', 'PROCESEZ...');
 
-            // Trimite audio prin chat.send ca atașament
-            // OpenClaw Gateway suportă atașamente în mesaje
-            const msgId = crypto.randomUUID ? crypto.randomUUID() : 'k' + (++rpcCounter);
-            sendWsMessage({
-              type: 'req',
-              id: msgId,
-              method: 'chat.send',
-              params: {
-                sessionKey: SESSION_KEY,
-                message: '🎤 [audio]',
-                idempotencyKey: msgId,
-                attachments: [{
-                  type: 'audio',
-                  media: 'data:' + (mediaRecorder.mimeType || 'audio/webm') + ';base64,' + base64,
-                  mimeType: mediaRecorder.mimeType || 'audio/webm'
-                }]
+          try {
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+              const base64 = reader.result.split(',')[1];
+              const dataSizeKB = Math.round(base64.length * 0.75 / 1024);
+              dbg('Audio: ' + dataSizeKB + 'KB → server');
+
+              // Trimite ca audio la server
+              try {
+                const resp = await fetch(serverUrl + '/audio', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    audio: base64,
+                    mimeType: mediaRecorder.mimeType || 'audio/webm'
+                  }),
+                  signal: AbortSignal.timeout(90000)
+                });
+
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const data = await resp.json();
+
+                if (data.transcript) {
+                  transcriptEl.textContent = '🎤 ' + data.transcript;
+                  addChatBubble(data.transcript, 'user');
+                }
+
+                if (data.reply && data.reply.trim() !== 'NO_REPLY') {
+                  addChatBubble(data.reply, 'lola');
+                  document.getElementById('response-text').textContent = data.reply;
+                  document.getElementById('response').classList.add('visible');
+                  isThinking = false;
+                  speakResponse(data.reply);
+                } else {
+                  isThinking = false;
+                  if (isConnected) setStatus('on', 'CONECTAT');
+                  restartListening();
+                }
+              } catch (e) {
+                isThinking = false;
+                dbg('Audio chat err: ' + e.message);
+                addChatBubble('⚠️ Eroare: ' + e.message, 'lola');
+                if (isConnected) setStatus('on', 'CONECTAT');
+                restartListening();
               }
-            });
-
-            // Așteptăm răspuns — vom primi event chat cu transcrierea + răspuns
-            isThinking = true;
-            setStatus('thinking', 'PROCESEZ...');
-            transcriptEl.textContent = '⏳ Aștept răspuns...';
-          };
-          reader.readAsDataURL(audioBlob);
+            };
+            reader.readAsDataURL(audioBlob);
+          } catch (e) {
+            isThinking = false;
+            dbg('FileReader err: ' + e.message);
+            restartListening();
+          }
         };
 
-        // Auto-stop după 15s
         recordingTimer = setTimeout(() => {
           if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            dbg('REC timeout 15s — auto stop');
+            dbg('REC timeout 15s');
             mediaRecorder.stop();
           }
         }, 15000);
@@ -678,7 +742,6 @@
         mediaRecorder.start();
         dbg('REC pornit OK');
 
-        // Permite oprire manuală prin tap pe orb
         const orb = document.getElementById('voice-orb');
         orb.onclick = () => {
           if (mediaRecorder && mediaRecorder.state !== 'inactive') {
@@ -689,28 +752,23 @@
       } catch(e) {
         dbg('REC err: ' + e.message);
         document.getElementById('voice-status').textContent = '⚠️ Microfon: ' + e.message;
-        stopListening();
-        if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
+        isListening = false;
+        restartListening();
       }
-    }
-
-    function stopListening() {
-      isListening = false;
-      if (recordingTimer) { clearTimeout(recordingTimer); recordingTimer = null; }
-      // Nu oprim mediaRecorder aici — onstop face cleanup
     }
 
     function stopRecording() {
+      if (recordingTimer) { clearTimeout(recordingTimer); recordingTimer = null; }
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        try { mediaRecorder.stop(); } catch(e) {}
+        try { mediaRecorder.stop(); } catch(e){}
       }
       if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
-      stopListening();
+      isListening = false;
     }
 
-    // === TTS ===
-    // Edge TTS — voce Microsoft naturală prin WebSocket (gratis, fără API key)
-    // Fallback: speechSynthesis (browser nativ, mai robotic dar funcțional offline)
+    // ==========================================
+    // === TTS (Edge TTS + speechSynthesis fallback) ===
+    // ==========================================
     let edgeTtsAudio = null;
     let edgeTtsWs = null;
 
@@ -718,7 +776,8 @@
       isSpeaking = true; isThinking = false;
       setStatus('speaking', 'VORBESC...');
       dbg('TTS: "' + text.substring(0, 50) + (text.length > 50 ? '...' : '') + '"');
-      speakEdgeTts(text);
+      if (ttsEngine === 'edge') speakEdgeTts(text);
+      else fallbackTts(text);
     }
 
     async function speakEdgeTts(text) {
@@ -731,91 +790,56 @@
       const lang = voice.split('-').slice(0, 2).join('-');
 
       try {
-        // Edge TTS WebSocket endpoint
         const wsUrl = 'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4';
         edgeTtsWs = new WebSocket(wsUrl);
-
         let audioChunks = [];
-        let audioFormat = null;
 
         edgeTtsWs.binaryType = 'arraybuffer';
 
         edgeTtsWs.onopen = () => {
           dbg('Edge TTS conectat — voice=' + voice);
-          // Config message
           const config = 'Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}';
           edgeTtsWs.send(config);
-
-          // SSML message
-          const ssml = '<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xml:lang=\"' + lang + '\"><voice name=\"' + voice + '\"><prosody rate=\"+5%\" pitch=\"+0%\">' + text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</prosody></voice></speak>';
+          const ssml = '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="' + lang + '"><voice name="' + voice + '"><prosody rate="+5%" pitch="+0%">' + text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</prosody></voice></speak>';
           const msg = 'X-RequestId:' + (crypto.randomUUID ? crypto.randomUUID() : 'r' + (++rpcCounter)) + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + new Date().toISOString() + 'Z\r\nPath:ssml\r\n\r\n' + ssml;
           edgeTtsWs.send(msg);
         };
 
         edgeTtsWs.onmessage = (event) => {
           if (event.data instanceof ArrayBuffer) {
-            // Binary audio data — primii 2 bytes sunt header-ul (0x00 0x67 = Path:audio)
             if (event.data.byteLength > 2) {
-              const headerLen = 2;
-              const audioData = event.data.slice(headerLen);
+              const audioData = event.data.slice(2);
               if (audioData.byteLength > 0) audioChunks.push(audioData);
             }
           } else if (typeof event.data === 'string') {
-            // Text message — verificăm dacă e Path:turn.end
             if (event.data.includes('Path:turn.end')) {
               dbg('Edge TTS gata — ' + audioChunks.length + ' chunks');
-              edgeTtsWs.close();
+              try { edgeTtsWs.close(); } catch(e){}
               if (audioChunks.length > 0) {
-                // Combină chunks într-un singur Blob și redă
                 const blob = new Blob(audioChunks, { type: 'audio/mp3' });
                 const url = URL.createObjectURL(blob);
                 edgeTtsAudio = new Audio(url);
                 edgeTtsAudio.onended = () => {
-                  dbg('Edge TTS redare completă');
-                  URL.revokeObjectURL(url);
-                  edgeTtsAudio = null;
-                  stopSpeaking();
-                  if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
+                  URL.revokeObjectURL(url); edgeTtsAudio = null; stopSpeaking(); restartListening();
                 };
-                edgeTtsAudio.onerror = (e) => {
-                  dbg('Edge TTS audio err');
-                  URL.revokeObjectURL(url);
-                  edgeTtsAudio = null;
-                  fallbackTts(text);
-                };
-                edgeTtsAudio.play().catch(() => { dbg('Edge TTS play blocked'); fallbackTts(text); });
-              } else {
-                dbg('Edge TTS fără audio — fallback');
-                fallbackTts(text);
-              }
-            } else if (event.data.includes('Path:turn.start')) {
-              dbg('Edge TTS streaming...');
+                edgeTtsAudio.onerror = () => { URL.revokeObjectURL(url); edgeTtsAudio = null; fallbackTts(text); };
+                edgeTtsAudio.play().catch(() => fallbackTts(text));
+              } else { fallbackTts(text); }
             }
           }
         };
 
-        edgeTtsWs.onerror = (e) => {
-          dbg('Edge TTS WS err');
-          fallbackTts(text);
-        };
+        edgeTtsWs.onerror = () => { try { edgeTtsWs.close(); } catch(e){} fallbackTts(text); };
+        edgeTtsWs.onclose = () => {};
 
-        edgeTtsWs.onclose = () => {
-          dbg('Edge TTS WS closed');
-        };
-
-        // Timeout 10s — dacă nu primim audio, fallback
         setTimeout(() => {
           if (isSpeaking && audioChunks.length === 0 && edgeTtsWs && edgeTtsWs.readyState === WebSocket.OPEN) {
-            dbg('Edge TTS timeout — fallback');
             try { edgeTtsWs.close(); } catch(e){}
             fallbackTts(text);
           }
         }, 10000);
 
-      } catch(e) {
-        dbg('Edge TTS excepție: ' + e.message);
-        fallbackTts(text);
-      }
+      } catch(e) { fallbackTts(text); }
     }
 
     function fallbackTts(text) {
@@ -828,13 +852,11 @@
         const matchVoice = voices.find(v => v.lang === utterance.lang) || voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
         if (matchVoice) utterance.voice = matchVoice;
         utterance.rate = 1.05; utterance.pitch = 1.0;
-        utterance.onend = () => { dbg('TTS fallback ended'); stopSpeaking(); if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); } };
-        utterance.onerror = (e) => { dbg('TTS fallback err: ' + e.error); stopSpeaking(); if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); } };
+        utterance.onend = () => { stopSpeaking(); restartListening(); };
+        utterance.onerror = () => { stopSpeaking(); restartListening(); };
         window.speechSynthesis.speak(utterance);
       } else {
-        dbg('Niciun TTS disponibil');
-        stopSpeaking();
-        if (isOn) { wakeRestartCount = 0; setTimeout(startWakeWord, 50); }
+        stopSpeaking(); restartListening();
       }
     }
 
@@ -846,16 +868,34 @@
       if (isConnected && !isListening && !isThinking) setStatus('on', 'CONECTAT');
     }
 
+    // === Orb events for Push-to-Talk ===
+    document.addEventListener('DOMContentLoaded', function() {
+      const orb = document.getElementById('voice-orb');
+      if (orb) {
+        orb.addEventListener('touchstart', (e) => {
+          if (chatMode === 'push' && isOn && !isListening && !isThinking && !isSpeaking) {
+            e.preventDefault(); startPushToTalk();
+          }
+        });
+        orb.addEventListener('touchend', (e) => {
+          if (chatMode === 'push' && isPushing) { e.preventDefault(); stopPushToTalk(); }
+        });
+        orb.addEventListener('mousedown', () => {
+          if (chatMode === 'push' && isOn && !isListening && !isThinking && !isSpeaking) startPushToTalk();
+        });
+        orb.addEventListener('mouseup', () => { if (chatMode === 'push' && isPushing) stopPushToTalk(); });
+      }
+    });
+
     // === Service Worker ===
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(e => dbg('SW err: ' + e));
     }
 
     // === Init ===
-    if (!gatewayUrl) toggleSettings();
+    if (!serverUrl) toggleSettings();
     if ('speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = () => dbg('Voices: ' + window.speechSynthesis.getVoices().length);
-      // Unele browsere necesită un utterance gol pentru a încărca vocile
       window.speechSynthesis.getVoices();
     }
   </script>
