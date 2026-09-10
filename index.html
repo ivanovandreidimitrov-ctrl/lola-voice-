@@ -116,7 +116,7 @@
 </head>
 <body>
   <div class="header">
-    <div class="header-title">🧭 Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v6.0</span></div>
+    <div class="header-title">🧭 Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v6.1</span></div>
     <div class="status-badge status-off" id="status-badge">
       <span class="status-dot"></span>
       <span id="status-text">DECONECTAT</span>
@@ -215,6 +215,7 @@
     // === State ===
     let isOn = false, isConnected = false, isListening = false, isThinking = false, isSpeaking = false;
     let isWakeListening = false;
+    let ttsActive = false; // v6.1 — blochează microfonul în timp ce TTS vorbește (anti feedback loop)
     let wakeRecognition = null;
     let wakeRestartTimer = null;
     let wakeRestartCount = 0;
@@ -432,7 +433,7 @@
     }
 
     function restartListening() {
-      if (isOn && isConnected) {
+      if (isOn && isConnected && !ttsActive) {
         if (chatMode === 'wake') { wakeRestartCount = 0; setTimeout(startWakeWord, 300); }
         else if (chatMode === 'continuous') { setTimeout(startContinuous, 300); }
       }
@@ -442,7 +443,7 @@
     // === MODE 1: WAKE WORD (SpeechRecognition) ===
     // ==========================================
     function startWakeWord() {
-      if (isWakeListening || isListening || isThinking || isSpeaking) return;
+      if (isWakeListening || isListening || isThinking || isSpeaking || ttsActive) return;
       if (chatMode !== 'wake') return;
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) { dbg('SpeechRecognition nu există'); return; }
@@ -527,7 +528,7 @@
     // După răspuns TTS → repornește ascultarea automat
 
     function startContinuous() {
-      if (isListening || isThinking || isSpeaking) return;
+      if (isListening || isThinking || isSpeaking || ttsActive) return;
       if (chatMode !== 'continuous') return;
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) { dbg('SpeechRecognition nu există'); return; }
@@ -595,9 +596,9 @@
         if (finalTranscript.trim() && !isThinking && !isSpeaking) {
           stopContinuous();
           sendToServer(finalTranscript.trim());
-        } else if (isOn && isConnected && !isThinking && !isSpeaking && chatMode === 'continuous') {
-          // Repornire automată
-          setTimeout(() => { if (isOn && !isThinking && !isSpeaking && chatMode === 'continuous') startContinuous(); }, 300);
+        } else if (isOn && isConnected && !isThinking && !isSpeaking && !ttsActive && chatMode === 'continuous') {
+          // Repornire automată — doar dacă TTS nu e activ
+          setTimeout(() => { if (isOn && !isThinking && !isSpeaking && !ttsActive && chatMode === 'continuous') startContinuous(); }, 300);
         }
       };
 
@@ -640,6 +641,7 @@
     // Server face Whisper transcriere + Ollama response în unul singur
 
     async function startRecording() {
+      if (ttsActive) return; // v6.1 — nu înregistra în timp ce TTS vorbește
       isListening = true;
       setStatus('listening', 'ASCULT...');
       const hint = document.getElementById('wake-hint');
@@ -774,6 +776,10 @@
 
     function speakResponse(text) {
       isSpeaking = true; isThinking = false;
+      ttsActive = true; // v6.1 — blochează microfonul
+      // Oprește orice recunoaștere vocală activă
+      stopWakeWord();
+      stopContinuous();
       setStatus('speaking', 'VORBESC...');
       dbg('TTS: "' + text.substring(0, 50) + (text.length > 50 ? '...' : '') + '"');
       if (ttsEngine === 'edge') speakEdgeTts(text);
@@ -862,6 +868,7 @@
 
     function stopSpeaking() {
       isSpeaking = false;
+      ttsActive = false; // v6.1 — deblochează microfonul
       if (edgeTtsAudio) { try { edgeTtsAudio.pause(); edgeTtsAudio = null; } catch(e){} }
       if (edgeTtsWs) { try { edgeTtsWs.onmessage = null; edgeTtsWs.close(); } catch(e){} edgeTtsWs = null; }
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
