@@ -157,7 +157,7 @@
       <h2>⚙️ Setări</h2>
       <div class="settings-field">
         <label for="server-url">Server URL (Tailscale)</label>
-        <input type="url" id="server-url" placeholder="https://desktop-iohktkv.tail18ed74.ts.net">
+        <input type="url" id="server-url" placeholder="http://100.77.8.15:18789">
       </div>
       <div class="settings-field">
         <label for="wake-word">Wake Word</label>
@@ -198,7 +198,7 @@
     const SILENCE_KEY = 'lola_silence_delay';
     const MODE_KEY = 'lola_mode';
 
-    let serverUrl = localStorage.getItem(SERVER_KEY) || 'https://desktop-iohktkv.tail18ed74.ts.net';
+    let serverUrl = localStorage.getItem(SERVER_KEY) || 'http://100.77.8.15:18789';
     let wakeWord = localStorage.getItem(WAKE_KEY) || 'hey lola';
     let ttsVoice = localStorage.getItem(TTS_KEY) || 'auto';
     let ttsEngine = localStorage.getItem(TTS_ENGINE_KEY) || 'edge';
@@ -319,7 +319,7 @@
 
       // Health check
       try {
-        const resp = await fetch(serverUrl + '/health', { signal: AbortSignal.timeout(5000), headers: { 'Authorization': 'Bearer 660723210b7e3a2b29185934ab07bc4828e5832525404150' } });
+        const resp = await fetch(serverUrl + '/health', { signal: AbortSignal.timeout(5000) });
         const data = await resp.json();
         if (data.status === 'ok') {
           isConnected = true;
@@ -379,7 +379,7 @@
 
       try {
         dbg('Trimitem: ' + text.substring(0, 60));
-        const resp = await fetch(serverUrl + '/chat', { headers: { 'Authorization': 'Bearer 660723210b7e3a2b29185934ab07bc4828e5832525404150' },
+        const resp = await fetch(serverUrl + '/chat', { 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text }),
@@ -689,7 +689,7 @@
 
               // Trimite ca audio la server
               try {
-                const resp = await fetch(serverUrl + '/audio', { headers: { 'Authorization': 'Bearer 660723210b7e3a2b29185934ab07bc4828e5832525404150' },
+                const resp = await fetch(serverUrl + '/audio', { 
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
