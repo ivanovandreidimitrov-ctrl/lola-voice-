@@ -190,7 +190,31 @@
   </div>
 
   <script>
-    // === v6.0 Config — Direct Ollama Server (no Gateway WebSocket) ===
+    
+// Anti-loop: detect repetitive garbage from Chrome SpeechRecognition
+function isRepetitiveGarbage(text) {
+  if (!text || text.length < 10) return false;
+  const words = text.trim().toLowerCase().split(/\s+/);
+  if (words.length < 4) return false;
+  // Check if same word repeats 3+ times
+  const counts = {};
+  words.forEach(w => counts[w] = (counts[w]||0) + 1);
+  const maxRepeat = Math.max(...Object.values(counts));
+  if (maxRepeat >= 3 && words.length <= 12) return true;
+  // Check if short phrase repeats (e.g. "fosta fost un mesaj" x3)
+  for (let len = 2; len <= 5; len++) {
+    const phrase = words.slice(0, len).join(' ');
+    let reps = 1;
+    for (let i = len; i + len <= words.length; i += len) {
+      if (words.slice(i, i+len).join(' ') === phrase) reps++;
+      else break;
+    }
+    if (reps >= 3) return true;
+  }
+  return false;
+}
+
+// === v6.0 Config — Direct Ollama Server (no Gateway WebSocket) ===
     const SERVER_KEY = 'lola_server_url';
     const WAKE_KEY = 'lola_wake_word';
     const TTS_KEY = 'lola_tts_voice';
@@ -364,7 +388,7 @@
     // ==========================================
     // === CHAT — Direct Ollama Server (HTTP) ===
     // ==========================================
-    async function sendToServer(text) {
+    async function if (isRepetitiveGarbage(text)) { dbg('Anti-loop: ignorat text repetitiv'); } else sendToServer(text) {
       isThinking = true;
       stopListening();
       setStatus('thinking', 'PROCESEZ...');
@@ -419,7 +443,7 @@
       const text = input.value.trim();
       if (!text || !isConnected) return;
       input.value = '';
-      sendToServer(text);
+      if (isRepetitiveGarbage(text)) { dbg('Anti-loop: ignorat text repetitiv'); } else sendToServer(text);
     }
     document.addEventListener('DOMContentLoaded', function() {
       const ti = document.getElementById('text-input');
@@ -575,7 +599,7 @@
             if (text && isListening && !isThinking && !isSpeaking) {
               dbg('Silence detected — sending: ' + text.substring(0, 60));
               stopContinuous();
-              sendToServer(text);
+              if (isRepetitiveGarbage(text)) { dbg('Anti-loop: ignorat text repetitiv'); } else sendToServer(text);
             }
           }, silenceDelay * 1000);
         }
@@ -595,7 +619,7 @@
         // Dacă avem text netrimis, trimite-l
         if (finalTranscript.trim() && !isThinking && !isSpeaking) {
           stopContinuous();
-          sendToServer(finalTranscript.trim());
+          if (isRepetitiveGarbage(finalTranscript.trim())) { dbg('Anti-loop: ignorat text repetitiv'); } else sendToServer(finalTranscript.trim());
         } else if (isOn && isConnected && !isThinking && !isSpeaking && !ttsActive && chatMode === 'continuous') {
           // Repornire automată — doar dacă TTS nu e activ
           setTimeout(() => { if (isOn && !isThinking && !isSpeaking && !ttsActive && chatMode === 'continuous') startContinuous(); }, 300);
