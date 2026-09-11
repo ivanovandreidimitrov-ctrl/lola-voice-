@@ -388,7 +388,8 @@ function isRepetitiveGarbage(text) {
     // ==========================================
     // === CHAT — Direct Ollama Server (HTTP) ===
     // ==========================================
-    async function if (isRepetitiveGarbage(text)) { dbg('Anti-loop: ignorat text repetitiv'); } else sendToServer(text) {
+    async function sendToServer(text) {
+  if (isRepetitiveGarbage(text)) { dbg('Anti-loop: ignorat text repetitiv'); return; }
       isThinking = true;
       stopListening();
       setStatus('thinking', 'PROCESEZ...');
