@@ -157,7 +157,7 @@
       <h2>⚙️ Setări</h2>
       <div class="settings-field">
         <label for="server-url">Server URL (Tailscale)</label>
-        <input type="url" id="server-url" placeholder="http://100.77.8.15:18790">
+        <input type="url" id="server-url" placeholder="https://desktop-iohktkv.tail18ed74.ts.net">
       </div>
       <div class="settings-field">
         <label for="wake-word">Wake Word</label>
@@ -214,6 +214,15 @@ function isRepetitiveGarbage(text) {
   return false;
 }
 
+
+// HTTP fallback: SpeechRecognition requires HTTPS. Use MediaRecorder on HTTP.
+function speechRecognitionAvailable() {
+  return typeof window.SpeechRecognition !== 'undefined' || typeof window.webkitSpeechRecognition !== 'undefined';
+}
+function isSecureContext() {
+  return window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+}
+
 // === v6.0 Config — Direct Ollama Server (no Gateway WebSocket) ===
     const SERVER_KEY = 'lola_server_url';
     const WAKE_KEY = 'lola_wake_word';
@@ -222,7 +231,7 @@ function isRepetitiveGarbage(text) {
     const SILENCE_KEY = 'lola_silence_delay';
     const MODE_KEY = 'lola_mode';
 
-    let serverUrl = localStorage.getItem(SERVER_KEY) || 'http://100.77.8.15:18790';
+    let serverUrl = localStorage.getItem(SERVER_KEY) || 'https://desktop-iohktkv.tail18ed74.ts.net';
     let wakeWord = localStorage.getItem(WAKE_KEY) || 'hey lola';
     let ttsVoice = localStorage.getItem(TTS_KEY) || 'auto';
     let ttsEngine = localStorage.getItem(TTS_ENGINE_KEY) || 'edge';
