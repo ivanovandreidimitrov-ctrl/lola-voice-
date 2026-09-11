@@ -319,7 +319,7 @@
 
       // Health check
       try {
-        const resp = await fetch(serverUrl + '/health', { signal: AbortSignal.timeout(5000) });
+        const resp = await fetch(serverUrl + '/health', { signal: AbortSignal.timeout(5000), headers: { 'Authorization': 'Bearer 660723210b7e3a2b29185934ab07bc4828e5832525404150' } });
         const data = await resp.json();
         if (data.status === 'ok') {
           isConnected = true;
@@ -379,7 +379,7 @@
 
       try {
         dbg('Trimitem: ' + text.substring(0, 60));
-        const resp = await fetch(serverUrl + '/chat', {
+        const resp = await fetch(serverUrl + '/chat', { headers: { 'Authorization': 'Bearer 660723210b7e3a2b29185934ab07bc4828e5832525404150' },
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text }),
@@ -689,7 +689,7 @@
 
               // Trimite ca audio la server
               try {
-                const resp = await fetch(serverUrl + '/audio', {
+                const resp = await fetch(serverUrl + '/audio', { headers: { 'Authorization': 'Bearer 660723210b7e3a2b29185934ab07bc4828e5832525404150' },
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
