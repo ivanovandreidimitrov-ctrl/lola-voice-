@@ -157,7 +157,7 @@
       <h2>⚙️ Setări</h2>
       <div class="settings-field">
         <label for="server-url">Server URL (Tailscale)</label>
-        <input type="url" id="server-url" placeholder="http://100.77.8.15:18799">
+        <input type="url" id="server-url" placeholder="https://desktop-iohktkv.tail18ed74.ts.net">
       </div>
       <div class="settings-field">
         <label for="wake-word">Wake Word</label>
@@ -198,7 +198,7 @@
     const SILENCE_KEY = 'lola_silence_delay';
     const MODE_KEY = 'lola_mode';
 
-    let serverUrl = localStorage.getItem(SERVER_KEY) || 'http://100.77.8.15:18799';
+    let serverUrl = localStorage.getItem(SERVER_KEY) || 'https://desktop-iohktkv.tail18ed74.ts.net';
     let wakeWord = localStorage.getItem(WAKE_KEY) || 'hey lola';
     let ttsVoice = localStorage.getItem(TTS_KEY) || 'auto';
     let ttsEngine = localStorage.getItem(TTS_ENGINE_KEY) || 'edge';
