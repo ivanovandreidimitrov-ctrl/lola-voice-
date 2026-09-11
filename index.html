@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
-  <title>🧭 Lola Voice</title>
+  <title>đź§­ Lola Voice</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -116,30 +116,30 @@
 </head>
 <body>
   <div class="header">
-    <div class="header-title">🧭 Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v6.1</span></div>
+    <div class="header-title">đź§­ Lola Voice <span style="font-size:10px; color:var(--text-dim); font-weight:400;">v6.1</span></div>
     <div class="status-badge status-off" id="status-badge">
       <span class="status-dot"></span>
       <span id="status-text">DECONECTAT</span>
     </div>
-    <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
+    <div class="settings-icon" onclick="toggleSettings()">âš™ď¸Ź</div>
   </div>
 
   <div class="power-bar" style="display:flex; align-items:center; gap:8px; padding:4px 12px;">
-    <button class="power-bar-button off" id="power-button" onclick="togglePower()" style="width:auto; flex:0 0 auto; padding:6px 14px;">⏻ OFF</button>
-    <div class="voice-orb idle" id="voice-orb" style="width:32px; height:32px; font-size:16px; border-width:2px; flex-shrink:0;">🧭</div>
-    <div class="voice-status-text" id="voice-status" style="flex:1; text-align:left; font-size:11px;">Apasă ON</div>
+    <button class="power-bar-button off" id="power-button" onclick="togglePower()" style="width:auto; flex:0 0 auto; padding:6px 14px;">âŹ» OFF</button>
+    <div class="voice-orb idle" id="voice-orb" style="width:32px; height:32px; font-size:16px; border-width:2px; flex-shrink:0;">đź§­</div>
+    <div class="voice-status-text" id="voice-status" style="flex:1; text-align:left; font-size:11px;">ApasÄ ON</div>
     <div class="wake-hint" id="wake-hint" style="display:none; flex:0 0 auto; max-width:none; padding:2px 8px; font-size:10px;">Spune "Hey Lola"</div>
   </div>
 
   <div class="mode-toggle">
     <button class="mode-btn active" id="mode-wake" onclick="setMode('wake')">Wake Word</button>
-    <button class="mode-btn" id="mode-continuous" onclick="setMode('continuous')">Conversație</button>
+    <button class="mode-btn" id="mode-continuous" onclick="setMode('continuous')">ConversaČ›ie</button>
     <button class="mode-btn" id="mode-push" onclick="setMode('push')">Push-to-Talk</button>
   </div>
 
   <div class="voice-transcript" id="transcript" style="padding:4px 12px; max-height:40px;"></div>
   <div class="voice-response" id="response" style="padding:4px 12px; max-height:50px;">
-    <div class="response-label" style="font-size:10px;">🧭 LOLA:</div>
+    <div class="response-label" style="font-size:10px;">đź§­ LOLA:</div>
     <div id="response-text" style="font-size:12px;"></div>
   </div>
 
@@ -149,26 +149,26 @@
 
   <div class="text-input-bar" style="display:flex; gap:8px; padding:6px 12px; background:var(--card); border-top:1px solid var(--border); flex-shrink:0;">
     <input type="text" id="text-input" placeholder="Scrie mesaj..." style="flex:1; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px 12px; color:var(--text); font-size:14px; outline:none;">
-    <button id="text-send" onclick="sendTextMessage()" style="background:var(--accent); color:#fff; border:none; border-radius:10px; padding:8px 14px; font-size:14px; cursor:pointer; font-weight:600; flex-shrink:0;">➤</button>
+    <button id="text-send" onclick="sendTextMessage()" style="background:var(--accent); color:#fff; border:none; border-radius:10px; padding:8px 14px; font-size:14px; cursor:pointer; font-weight:600; flex-shrink:0;">âž¤</button>
   </div>
 
   <div class="settings-panel" id="settings-panel">
     <div class="settings-card">
-      <h2>⚙️ Setări</h2>
+      <h2>âš™ď¸Ź SetÄri</h2>
       <div class="settings-field">
         <label for="server-url">Server URL (Tailscale)</label>
-        <input type="url" id="server-url" placeholder="http://100.77.8.15:18790">
+        <input type="url" id="server-url" placeholder="http://100.77.8.15:18799">
       </div>
       <div class="settings-field">
         <label for="wake-word">Wake Word</label>
         <input type="text" id="wake-word" value="hey lola">
       </div>
       <div class="settings-field">
-        <label for="tts-voice">Voce Răspuns (TTS)</label>
+        <label for="tts-voice">Voce RÄspuns (TTS)</label>
         <select id="tts-voice">
           <option value="auto">Auto (limba telefonului)</option>
-          <option value="ro-RO">Română</option>
-          <option value="it-IT">Italiană</option>
+          <option value="ro-RO">RomĂ˘nÄ</option>
+          <option value="it-IT">ItalianÄ</option>
         </select>
       </div>
       <div class="settings-field">
@@ -179,18 +179,18 @@
         </select>
       </div>
       <div class="settings-field">
-        <label for="silence-delay">Tăcere = sfârșit (sec)</label>
+        <label for="silence-delay">TÄcere = sfĂ˘rČ™it (sec)</label>
         <input type="number" id="silence-delay" value="2" min="1" max="5" step="0.5">
       </div>
       <div class="settings-buttons">
-        <button class="btn btn-secondary" onclick="toggleSettings()">Anulează</button>
-        <button class="btn btn-primary" onclick="saveSettings()">Salvează</button>
+        <button class="btn btn-secondary" onclick="toggleSettings()">AnuleazÄ</button>
+        <button class="btn btn-primary" onclick="saveSettings()">SalveazÄ</button>
       </div>
     </div>
   </div>
 
   <script>
-    // === v6.0 Config — Direct Ollama Server (no Gateway WebSocket) ===
+    // === v6.0 Config â€” Direct Ollama Server (no Gateway WebSocket) ===
     const SERVER_KEY = 'lola_server_url';
     const WAKE_KEY = 'lola_wake_word';
     const TTS_KEY = 'lola_tts_voice';
@@ -198,7 +198,7 @@
     const SILENCE_KEY = 'lola_silence_delay';
     const MODE_KEY = 'lola_mode';
 
-    let serverUrl = localStorage.getItem(SERVER_KEY) || 'http://100.77.8.15:18790';
+    let serverUrl = localStorage.getItem(SERVER_KEY) || 'http://100.77.8.15:18799';
     let wakeWord = localStorage.getItem(WAKE_KEY) || 'hey lola';
     let ttsVoice = localStorage.getItem(TTS_KEY) || 'auto';
     let ttsEngine = localStorage.getItem(TTS_ENGINE_KEY) || 'edge';
@@ -215,7 +215,7 @@
     // === State ===
     let isOn = false, isConnected = false, isListening = false, isThinking = false, isSpeaking = false;
     let isWakeListening = false;
-    let ttsActive = false; // v6.1 — blochează microfonul în timp ce TTS vorbește (anti feedback loop)
+    let ttsActive = false; // v6.1 â€” blocheazÄ microfonul Ă®n timp ce TTS vorbeČ™te (anti feedback loop)
     let wakeRecognition = null;
     let wakeRestartTimer = null;
     let wakeRestartCount = 0;
@@ -247,7 +247,7 @@
       badge.className = 'status-badge status-' + status;
       statusText.textContent = text;
       orb.className = 'voice-orb ' + (status === 'off' ? 'idle' : status);
-      voiceStatus.textContent = text === 'DECONECTAT' ? 'Apasă ON pentru a conecta' : text;
+      voiceStatus.textContent = text === 'DECONECTAT' ? 'ApasÄ ON pentru a conecta' : text;
     }
 
     function toggleSettings() { document.getElementById('settings-panel').classList.toggle('visible'); }
@@ -306,14 +306,14 @@
     async function powerOn() {
       serverUrl = localStorage.getItem(SERVER_KEY) || serverUrl;
       if (!serverUrl) {
-        document.getElementById('voice-status').textContent = 'EROARE: Server URL lipsește!';
+        document.getElementById('voice-status').textContent = 'EROARE: Server URL lipseČ™te!';
         toggleSettings();
         return;
       }
       isOn = true;
       document.getElementById('power-button').classList.add('on');
       document.getElementById('power-button').classList.remove('off');
-      document.getElementById('power-button').textContent = '⏻ ON';
+      document.getElementById('power-button').textContent = 'âŹ» ON';
       document.getElementById('wake-hint').style.display = 'block';
       setStatus('on', 'CONECTARE...');
 
@@ -333,7 +333,7 @@
         isConnected = false;
         setStatus('off', 'SERVER INACCESIBIL');
         dbg('Server err: ' + e.message);
-        // Retry în 3s
+        // Retry Ă®n 3s
         setTimeout(() => { if (isOn) powerOn(); }, 3000);
       }
     }
@@ -343,7 +343,7 @@
       isWakeListening = false; isPushing = false;
       document.getElementById('power-button').classList.remove('on');
       document.getElementById('power-button').classList.add('off');
-      document.getElementById('power-button').textContent = '⏻ OFF';
+      document.getElementById('power-button').textContent = 'âŹ» OFF';
       document.getElementById('wake-hint').style.display = 'none';
       document.getElementById('wake-hint').classList.remove('active', 'listening');
       stopWakeWord();
@@ -358,11 +358,11 @@
     function startListening() {
       if (chatMode === 'wake') startWakeWord();
       else if (chatMode === 'continuous') startContinuous();
-      // push mode — ascultă doar la apăsare
+      // push mode â€” ascultÄ doar la apÄsare
     }
 
     // ==========================================
-    // === CHAT — Direct Ollama Server (HTTP) ===
+    // === CHAT â€” Direct Ollama Server (HTTP) ===
     // ==========================================
     async function sendToServer(text) {
       isThinking = true;
@@ -371,7 +371,7 @@
       streamedText = '';
 
       const transcriptEl = document.getElementById('transcript');
-      transcriptEl.textContent = '🎤 ' + text;
+      transcriptEl.textContent = 'đźŽ¤ ' + text;
       transcriptEl.classList.add('visible');
 
       const bubble = addChatBubble(text, 'user');
@@ -391,7 +391,7 @@
         bubble.classList.remove('pending');
 
         let reply = data.reply || '';
-        dbg('Răspuns: ' + reply.substring(0, 60));
+        dbg('RÄspuns: ' + reply.substring(0, 60));
 
         if (reply && reply.trim() !== 'NO_REPLY') {
           addChatBubble(reply, 'lola');
@@ -408,7 +408,7 @@
         bubble.classList.remove('pending');
         isThinking = false;
         dbg('Chat err: ' + e.message);
-        addChatBubble('⚠️ Eroare: ' + e.message, 'lola');
+        addChatBubble('âš ď¸Ź Eroare: ' + e.message, 'lola');
         if (isConnected) setStatus('on', 'CONECTAT');
         restartListening();
       }
@@ -446,7 +446,7 @@
       if (isWakeListening || isListening || isThinking || isSpeaking || ttsActive) return;
       if (chatMode !== 'wake') return;
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { dbg('SpeechRecognition nu există'); return; }
+      if (!SR) { dbg('SpeechRecognition nu existÄ'); return; }
 
       try { wakeRecognition = new SR(); } catch(e) { dbg('SR create err: ' + e.message); return; }
 
@@ -457,7 +457,7 @@
 
       wakeRecognition.onstart = () => {
         isWakeListening = true; wakeRestartCount = 0;
-        dbg('WAKE pornit — ascult "Hey Lola"');
+        dbg('WAKE pornit â€” ascult "Hey Lola"');
         document.getElementById('voice-orb').className = 'voice-orb on';
         const hint = document.getElementById('wake-hint');
         hint.classList.add('active'); hint.classList.remove('listening');
@@ -471,7 +471,7 @@
           let matched = false;
           for (const v of variants) { if (transcript.includes(v)) { matched = true; break; } }
           if (matched && !isListening && !isThinking && !isSpeaking) {
-            dbg('WAKE detectată: "' + transcript + '"');
+            dbg('WAKE detectatÄ: "' + transcript + '"');
             stopWakeWord();
             if (navigator.vibrate) navigator.vibrate(100);
             startRecording();
@@ -483,7 +483,7 @@
       wakeRecognition.onerror = (e) => {
         dbg('WAKE err: ' + e.error);
         if (e.error === 'not-allowed') {
-          document.getElementById('voice-status').textContent = '⚠️ Microfon blocat';
+          document.getElementById('voice-status').textContent = 'âš ď¸Ź Microfon blocat';
           return;
         }
       };
@@ -524,14 +524,14 @@
     // === MODE 2: CONTINUOUS CONVERSATION ===
     // ==========================================
     // SpeechRecognition cu continuous=true, interimResults=true
-    // Detectează tăcerea (silenceDelay sec) → trimite textul la server
-    // După răspuns TTS → repornește ascultarea automat
+    // DetecteazÄ tÄcerea (silenceDelay sec) â†’ trimite textul la server
+    // DupÄ rÄspuns TTS â†’ reporneČ™te ascultarea automat
 
     function startContinuous() {
       if (isListening || isThinking || isSpeaking || ttsActive) return;
       if (chatMode !== 'continuous') return;
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { dbg('SpeechRecognition nu există'); return; }
+      if (!SR) { dbg('SpeechRecognition nu existÄ'); return; }
 
       try { continuousRecognition = new SR(); } catch(e) { return; }
 
@@ -548,7 +548,7 @@
         setStatus('listening', 'ASCULT...');
         dbg('CONTINUOUS pornit');
         const hint = document.getElementById('wake-hint');
-        if (hint) { hint.classList.add('listening'); hint.textContent = '🔊 Vorbește...'; }
+        if (hint) { hint.classList.add('listening'); hint.textContent = 'đź”Š VorbeČ™te...'; }
       };
 
       continuousRecognition.onresult = (event) => {
@@ -563,17 +563,17 @@
         }
         const display = finalTranscript + interim;
         const transcriptEl = document.getElementById('transcript');
-        transcriptEl.textContent = '🎤 ' + display;
+        transcriptEl.textContent = 'đźŽ¤ ' + display;
         transcriptEl.classList.add('visible');
 
-        // Detect silence — dacă avem text și tăcere > silenceDelay sec → trimite
+        // Detect silence â€” dacÄ avem text Č™i tÄcere > silenceDelay sec â†’ trimite
         if (finalTranscript.trim() || interim.trim()) {
           lastSpeechTime = Date.now();
           if (silenceTimer) clearTimeout(silenceTimer);
           silenceTimer = setTimeout(() => {
             const text = (finalTranscript + ' ' + interim).trim();
             if (text && isListening && !isThinking && !isSpeaking) {
-              dbg('Silence detected — sending: ' + text.substring(0, 60));
+              dbg('Silence detected â€” sending: ' + text.substring(0, 60));
               stopContinuous();
               sendToServer(text);
             }
@@ -584,7 +584,7 @@
       continuousRecognition.onerror = (e) => {
         dbg('CONTINUOUS err: ' + e.error);
         if (e.error === 'not-allowed') {
-          document.getElementById('voice-status').textContent = '⚠️ Microfon blocat';
+          document.getElementById('voice-status').textContent = 'âš ď¸Ź Microfon blocat';
           return;
         }
       };
@@ -592,12 +592,12 @@
       continuousRecognition.onend = () => {
         isListening = false;
         dbg('CONTINUOUS ended');
-        // Dacă avem text netrimis, trimite-l
+        // DacÄ avem text netrimis, trimite-l
         if (finalTranscript.trim() && !isThinking && !isSpeaking) {
           stopContinuous();
           sendToServer(finalTranscript.trim());
         } else if (isOn && isConnected && !isThinking && !isSpeaking && !ttsActive && chatMode === 'continuous') {
-          // Repornire automată — doar dacă TTS nu e activ
+          // Repornire automatÄ â€” doar dacÄ TTS nu e activ
           setTimeout(() => { if (isOn && !isThinking && !isSpeaking && !ttsActive && chatMode === 'continuous') startContinuous(); }, 300);
         }
       };
@@ -618,7 +618,7 @@
     // ==========================================
     // === MODE 3: PUSH-TO-TALK (tap and hold) ===
     // ==========================================
-    // Apasă și ține orb-ul → înregistrează. Release → trimite.
+    // ApasÄ Č™i Č›ine orb-ul â†’ Ă®nregistreazÄ. Release â†’ trimite.
 
     function startPushToTalk() {
       if (isListening || isThinking || isSpeaking) return;
@@ -637,15 +637,15 @@
     // ==========================================
     // === RECORDING (MediaRecorder + Groq Whisper via server) ===
     // ==========================================
-    // Pentru wake mode: după wake word → înregistrează → trimite audio la server
-    // Server face Whisper transcriere + Ollama response în unul singur
+    // Pentru wake mode: dupÄ wake word â†’ Ă®nregistreazÄ â†’ trimite audio la server
+    // Server face Whisper transcriere + Ollama response Ă®n unul singur
 
     async function startRecording() {
-      if (ttsActive) return; // v6.1 — nu înregistra în timp ce TTS vorbește
+      if (ttsActive) return; // v6.1 â€” nu Ă®nregistra Ă®n timp ce TTS vorbeČ™te
       isListening = true;
       setStatus('listening', 'ASCULT...');
       const hint = document.getElementById('wake-hint');
-      if (hint) { hint.classList.remove('active'); hint.classList.add('listening'); hint.textContent = '🔊 Vorbește...'; }
+      if (hint) { hint.classList.remove('active'); hint.classList.add('listening'); hint.textContent = 'đź”Š VorbeČ™te...'; }
       dbg('REC start');
 
       try {
@@ -665,7 +665,7 @@
           if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
 
           if (audioBlob.size < 500) {
-            dbg('Audio prea mic — ignor');
+            dbg('Audio prea mic â€” ignor');
             isListening = false;
             restartListening();
             return;
@@ -673,7 +673,7 @@
 
           // Trimite audio la server pentru Whisper + Ollama
           const transcriptEl = document.getElementById('transcript');
-          transcriptEl.textContent = '🔄 Transcriu + procesez...';
+          transcriptEl.textContent = 'đź”„ Transcriu + procesez...';
           transcriptEl.classList.add('visible');
 
           isThinking = true;
@@ -685,7 +685,7 @@
             reader.onloadend = async () => {
               const base64 = reader.result.split(',')[1];
               const dataSizeKB = Math.round(base64.length * 0.75 / 1024);
-              dbg('Audio: ' + dataSizeKB + 'KB → server');
+              dbg('Audio: ' + dataSizeKB + 'KB â†’ server');
 
               // Trimite ca audio la server
               try {
@@ -703,7 +703,7 @@
                 const data = await resp.json();
 
                 if (data.transcript) {
-                  transcriptEl.textContent = '🎤 ' + data.transcript;
+                  transcriptEl.textContent = 'đźŽ¤ ' + data.transcript;
                   addChatBubble(data.transcript, 'user');
                 }
 
@@ -721,7 +721,7 @@
               } catch (e) {
                 isThinking = false;
                 dbg('Audio chat err: ' + e.message);
-                addChatBubble('⚠️ Eroare: ' + e.message, 'lola');
+                addChatBubble('âš ď¸Ź Eroare: ' + e.message, 'lola');
                 if (isConnected) setStatus('on', 'CONECTAT');
                 restartListening();
               }
@@ -753,7 +753,7 @@
         };
       } catch(e) {
         dbg('REC err: ' + e.message);
-        document.getElementById('voice-status').textContent = '⚠️ Microfon: ' + e.message;
+        document.getElementById('voice-status').textContent = 'âš ď¸Ź Microfon: ' + e.message;
         isListening = false;
         restartListening();
       }
@@ -776,8 +776,8 @@
 
     function speakResponse(text) {
       isSpeaking = true; isThinking = false;
-      ttsActive = true; // v6.1 — blochează microfonul
-      // Oprește orice recunoaștere vocală activă
+      ttsActive = true; // v6.1 â€” blocheazÄ microfonul
+      // OpreČ™te orice recunoaČ™tere vocalÄ activÄ
       stopWakeWord();
       stopContinuous();
       setStatus('speaking', 'VORBESC...');
@@ -803,7 +803,7 @@
         edgeTtsWs.binaryType = 'arraybuffer';
 
         edgeTtsWs.onopen = () => {
-          dbg('Edge TTS conectat — voice=' + voice);
+          dbg('Edge TTS conectat â€” voice=' + voice);
           const config = 'Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}';
           edgeTtsWs.send(config);
           const ssml = '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="' + lang + '"><voice name="' + voice + '"><prosody rate="+5%" pitch="+0%">' + text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</prosody></voice></speak>';
@@ -819,7 +819,7 @@
             }
           } else if (typeof event.data === 'string') {
             if (event.data.includes('Path:turn.end')) {
-              dbg('Edge TTS gata — ' + audioChunks.length + ' chunks');
+              dbg('Edge TTS gata â€” ' + audioChunks.length + ' chunks');
               try { edgeTtsWs.close(); } catch(e){}
               if (audioChunks.length > 0) {
                 const blob = new Blob(audioChunks, { type: 'audio/mp3' });
@@ -849,7 +849,7 @@
     }
 
     function fallbackTts(text) {
-      dbg('TTS fallback — speechSynthesis');
+      dbg('TTS fallback â€” speechSynthesis');
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
@@ -868,7 +868,7 @@
 
     function stopSpeaking() {
       isSpeaking = false;
-      ttsActive = false; // v6.1 — deblochează microfonul
+      ttsActive = false; // v6.1 â€” deblocheazÄ microfonul
       if (edgeTtsAudio) { try { edgeTtsAudio.pause(); edgeTtsAudio = null; } catch(e){} }
       if (edgeTtsWs) { try { edgeTtsWs.onmessage = null; edgeTtsWs.close(); } catch(e){} edgeTtsWs = null; }
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
